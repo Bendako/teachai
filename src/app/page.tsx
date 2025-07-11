@@ -1,107 +1,90 @@
 "use client";
 
-import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
-import { Button } from '@/components/ui/button'
-import { StudentList } from '@/components/student-list'
-import { AnalyticsDashboard } from '@/components/analytics-dashboard'
-import { useQuery, useMutation } from "convex/react"
-import { api } from "../../convex/_generated/api"
-import { useState } from "react"
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { StudentList } from "../components/student-list";
+import { AnalyticsDashboard } from "../components/analytics-dashboard";
+import { Button } from "../components/ui/button";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                TeachAI
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <SignedOut>
-                <SignInButton>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    Sign In
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </div>
-          </div>
+  const [mounted, setMounted] = useState(false);
+
+  // Fix hydration issues by ensuring component is mounted
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
-      </header>
+      </main>
+    );
+  }
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8">
         <SignedOut>
-          <div className="relative">
-            {/* Background gradient and pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 -z-10">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5Q0EzQUYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-            </div>
-
+          <div className="relative overflow-hidden bg-white rounded-2xl shadow-lg border border-gray-100">
             {/* Hero Section */}
-            <div className="relative px-6 py-16 sm:py-20 lg:px-8">
-              <div className="mx-auto max-w-5xl text-center">
-                {/* Badge */}
-                <div className="mb-6">
-                  <span className="inline-flex items-center rounded-full bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700 ring-1 ring-blue-200">
-                    <span className="mr-2">🚀</span>
-                    AI-Powered Teaching Platform
-                  </span>
-                </div>
-
-                {/* Main Heading */}
-                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-                  The most comprehensive
-                  <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mt-2">
-                    English Teaching Platform
-                  </span>
+            <div className="relative px-6 py-16 sm:py-20 lg:py-24">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                  <span className="block text-blue-600">TeachAI</span>
+                  <span className="block text-gray-900 mt-2">Your intelligent teaching assistant</span>
                 </h1>
-
-                {/* Subtitle */}
-                <p className="mt-8 text-lg leading-7 text-gray-600 max-w-2xl mx-auto">
-                  Transform your English teaching with AI-powered lesson planning, automated progress tracking, 
-                  and seamless student management — all in one platform.
+                <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+                  Revolutionize your English teaching with AI-powered lesson planning, 
+                  real-time progress tracking, and automated student communication.
                 </p>
-
-                {/* CTA Buttons */}
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <SignInButton>
-                    <Button 
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-base font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 w-full sm:w-auto"
-                    >
-                      Start teaching for free
-                    </Button>
-                  </SignInButton>
-                  <Button 
-                    variant="outline" 
-                    className="px-6 py-3 text-base font-semibold rounded-lg border hover:bg-gray-50 transition-all duration-200 w-full sm:w-auto"
-                  >
-                    <span className="mr-2">▶️</span>
-                    Watch demo
+                <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold shadow-lg">
+                    Get Started Free
+                  </Button>
+                  <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50 px-8 py-3 text-lg font-semibold">
+                    Watch Demo
                   </Button>
                 </div>
+              </div>
+            </div>
 
-                {/* Trust indicators */}
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <span className="mr-1">✅</span>
-                    Free to start
+            {/* Key Benefits */}
+            <div className="relative px-6 py-12 border-t border-gray-100 bg-gray-50">
+              <div className="mx-auto max-w-4xl">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                  <div className="text-center">
+                    <div className="text-3xl mb-3">⚡</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Save 5+ hours per week</h3>
+                    <p className="text-sm text-gray-600">Automated lesson planning and progress reports</p>
                   </div>
-                  <div className="flex items-center">
-                    <span className="mr-1">⚡</span>
-                    Setup in 5 minutes
+                  <div className="text-center">
+                    <div className="text-3xl mb-3">🎯</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Personalized learning</h3>
+                    <p className="text-sm text-gray-600">AI adapts to each student's skill level and goals</p>
                   </div>
-                  <div className="flex items-center">
-                    <span className="mr-1">🔒</span>
+                  <div className="text-center">
+                    <div className="text-3xl mb-3">📊</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Data-driven insights</h3>
+                    <p className="text-sm text-gray-600">Real-time analytics and parent communication</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Privacy Badge */}
+            <div className="relative px-6 py-6 border-t border-gray-100">
+              <div className="text-center">
+                <div className="inline-flex items-center px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+                  <span className="text-green-600 text-sm font-medium mr-2">🔒</span>
+                  <span className="text-green-800 text-sm font-medium">
+                    100% secure • Student data protected • 
                     GDPR compliant
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
@@ -176,14 +159,30 @@ export default function Home() {
 }
 
 function TeacherDashboard() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const [mounted, setMounted] = useState(false);
+  
   const currentUser = useQuery(api.users.getUserByClerkId, { 
     clerkId: user?.id || "" 
   });
   const createUser = useMutation(api.users.createUser);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  // Create user if they don't exist
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Wait for Clerk to load and component to mount
+  if (!mounted || !isLoaded) {
+    return (
+      <div className="text-center py-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  // Create user if they don&apos;t exist
   if (user && currentUser === null) {
     createUser({
       clerkId: user.id,

@@ -6,6 +6,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 import { ProgressTracker } from "./progress-tracker";
 import { LessonHistory } from "./lesson-history";
+import { AILessonPlanner } from "./ai-lesson-planner";
 import { useState } from "react";
 import { EmailManagement } from "./email-management";
 
@@ -30,6 +31,12 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
     studentId: Id<"students">;
     studentName: string;
     parentEmail?: string;
+  } | null>(null);
+
+  const [aiPlannerModal, setAiPlannerModal] = useState<{
+    studentId: Id<"students">;
+    studentName: string;
+    studentLevel: "beginner" | "intermediate" | "advanced";
   } | null>(null);
 
   if (students === undefined) {
@@ -79,6 +86,9 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               }
               onOpenEmail={(studentId, studentName, parentEmail) =>
                 setEmailModal({ studentId, studentName, parentEmail })
+              }
+              onOpenAIPlanner={(studentId, studentName, studentLevel) =>
+                setAiPlannerModal({ studentId, studentName, studentLevel })
               }
             />
           ))}
@@ -141,6 +151,20 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </div>
         </div>
       )}
+
+      {aiPlannerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <AILessonPlanner
+              studentId={aiPlannerModal.studentId}
+              studentName={aiPlannerModal.studentName}
+              studentLevel={aiPlannerModal.studentLevel}
+              teacherId={teacherId}
+              onClose={() => setAiPlannerModal(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -159,12 +183,13 @@ type Student = {
   };
 };
 
-function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail }: { 
+function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail, onOpenAIPlanner }: { 
   student: Student; 
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
   onViewHistory: (studentId: Id<"students">, studentName: string) => void;
   onOpenEmail: (studentId: Id<"students">, studentName: string, parentEmail?: string) => void;
+  onOpenAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
 }) {
   const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
   const [isStartingLesson, setIsStartingLesson] = useState(false);
@@ -222,6 +247,14 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isStartingLesson ? "Starting..." : "Start Lesson"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => onOpenAIPlanner(student._id, student.name, student.level)}
+            className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 font-medium"
+          >
+            🤖 AI Plan Lesson
           </Button>
           <Button 
             variant="outline" 

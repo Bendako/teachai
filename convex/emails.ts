@@ -5,8 +5,14 @@ import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { Resend } from "resend";
 
-// Initialize Resend with API key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization of Resend to prevent deployment errors
+function getResendClient(): Resend {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || apiKey.includes('placeholder') || apiKey.includes('place')) {
+    throw new Error("RESEND_API_KEY is not configured or is placeholder");
+  }
+  return new Resend(apiKey);
+}
 
 // Send lesson summary email to parent
 export const sendLessonSummaryEmail = action({
@@ -75,6 +81,7 @@ export const sendLessonSummaryEmail = action({
       const emailSubject = `${student.name}'s English Lesson Summary - ${new Date(lesson.scheduledAt).toLocaleDateString()}`;
 
       // Send email using Resend
+      const resend = getResendClient();
       const emailResult = await resend.emails.send({
         from: `${teacher.name} <lessons@teachai-app.com>`,
         to: [student.parentInfo.email],
@@ -135,7 +142,7 @@ export const sendWeeklyProgressReport = action({
       });
 
       const weeklyLessons = recentLessons.filter(
-        lesson => lesson.lessonDate >= oneWeekAgo && lesson.lessonStatus === "completed"
+        (lesson: any) => lesson.lessonDate >= oneWeekAgo && lesson.lessonStatus === "completed"
       );
 
       if (weeklyLessons.length === 0) {
@@ -161,6 +168,7 @@ export const sendWeeklyProgressReport = action({
       const emailSubject = `${student.name}'s Weekly English Progress Report`;
 
       // Send email
+      const resend = getResendClient();
       const emailResult = await resend.emails.send({
         from: `${teacher.name} <lessons@teachai-app.com>`,
         to: [student.parentInfo.email],
@@ -403,7 +411,7 @@ function generateWeeklyReportHTML({ student, teacher, weeklyLessons }: {
             ${weeklyLessons.map(lesson => `
               <div style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
                 <div style="font-weight: 600;">${new Date(lesson.lessonDate).toLocaleDateString()}</div>
-                ${lesson.skills ? `<div style="font-size: 14px; color: #64748b;">Average: ${(Object.values(lesson.skills).reduce((a: number, b: number) => a + b, 0) / 6).toFixed(1)}/10</div>` : ''}
+                ${lesson.skills ? `<div style="font-size: 14px; color: #64748b;">Average: ${(Number(Object.values(lesson.skills).reduce((a: number, b: any) => a + Number(b), 0)) / 6).toFixed(1)}/10</div>` : ''}
                 ${lesson.topicsCovered && lesson.topicsCovered.length > 0 ? `<div style="font-size: 14px; color: #64748b;">Topics: ${lesson.topicsCovered.join(', ')}</div>` : ''}
               </div>
             `).join('')}

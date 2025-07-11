@@ -61,6 +61,10 @@ export default defineSchema({
       materials: v.array(v.string()),
       homework: v.optional(v.string()),
     })),
+    // AI generation metadata
+    isAiGenerated: v.optional(v.boolean()),
+    aiProvider: v.optional(v.union(v.literal("openai"), v.literal("claude"))),
+    generationId: v.optional(v.id("ai_generation_history")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -68,7 +72,8 @@ export default defineSchema({
     .index("by_student", ["studentId"])
     .index("by_teacher_and_status", ["teacherId", "status"])
     .index("by_scheduled_at", ["scheduledAt"])
-    .index("by_student_and_scheduled", ["studentId", "scheduledAt"]),
+    .index("by_student_and_scheduled", ["studentId", "scheduledAt"])
+    .index("by_generation_id", ["generationId"]),
   
   // Progress table for tracking student progress during lessons
   progress: defineTable({
@@ -96,4 +101,136 @@ export default defineSchema({
     .index("by_student", ["studentId"])
     .index("by_teacher", ["teacherId"])
     .index("by_student_and_created", ["studentId", "createdAt"]),
+
+  // AI-generated lesson plans with enhanced details
+  ai_lesson_plans: defineTable({
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    generationId: v.id("ai_generation_history"),
+    title: v.string(),
+    description: v.string(),
+    difficulty: v.union(v.literal("beginner"), v.literal("intermediate"), v.literal("advanced")),
+    estimatedDuration: v.number(), // Duration in minutes
+    objectives: v.array(v.string()),
+    activities: v.array(v.object({
+      name: v.string(),
+      description: v.string(),
+      duration: v.number(),
+      materials: v.array(v.string()),
+      skillsTargeted: v.array(v.string()),
+    })),
+    materials: v.array(v.string()),
+    homework: v.optional(v.object({
+      description: v.string(),
+      estimatedTime: v.number(),
+      resources: v.array(v.string()),
+    })),
+    assessmentCriteria: v.array(v.string()),
+    adaptationNotes: v.string(),
+    isUsed: v.boolean(),
+    usedInLessonId: v.optional(v.id("lessons")),
+    teacherFeedback: v.optional(v.object({
+      rating: v.number(), // 1-5 scale
+      comments: v.string(),
+      improvements: v.array(v.string()),
+    })),
+    createdAt: v.number(),
+  })
+    .index("by_teacher_and_student", ["teacherId", "studentId"])
+    .index("by_generation_id", ["generationId"])
+    .index("by_teacher_and_used", ["teacherId", "isUsed"])
+    .index("by_student_and_created", ["studentId", "createdAt"]),
+
+  // AI generation history and metadata
+  ai_generation_history: defineTable({
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    aiProvider: v.union(v.literal("openai"), v.literal("claude")),
+    model: v.string(), // e.g., "gpt-4", "claude-3-sonnet"
+    requestType: v.union(
+      v.literal("lesson_plan_generation"),
+      v.literal("progress_analysis"),
+      v.literal("lesson_adaptation")
+    ),
+    parameters: v.object({
+      studentLevel: v.string(),
+      focusSkills: v.array(v.string()),
+      lessonDuration: v.number(),
+      specificGoals: v.array(v.string()),
+      additionalContext: v.optional(v.string()),
+    }),
+    progressData: v.object({
+      recentSkillsAverage: v.object({
+        reading: v.number(),
+        writing: v.number(),
+        speaking: v.number(),
+        listening: v.number(),
+        grammar: v.number(),
+        vocabulary: v.number(),
+      }),
+      weakAreas: v.array(v.string()),
+      strongAreas: v.array(v.string()),
+      recentTopics: v.array(v.string()),
+      totalLessons: v.number(),
+    }),
+    response: v.object({
+      success: v.boolean(),
+      data: v.optional(v.any()), // The AI response data
+      error: v.optional(v.string()),
+      tokensUsed: v.optional(v.number()),
+      processingTime: v.optional(v.number()),
+    }),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_teacher_and_student", ["teacherId", "studentId"])
+    .index("by_teacher_and_status", ["teacherId", "status"])
+    .index("by_ai_provider", ["aiProvider"])
+    .index("by_request_type", ["requestType"])
+    .index("by_created_at", ["createdAt"]),
+
+  // Student analysis for AI context
+  student_analysis: defineTable({
+    studentId: v.id("students"),
+    teacherId: v.id("users"),
+    analysisType: v.union(
+      v.literal("progress_summary"),
+      v.literal("learning_patterns"),
+      v.literal("skill_assessment")
+    ),
+    analysis: v.object({
+      overallProgress: v.string(),
+      strengthsIdentified: v.array(v.string()),
+      areasForImprovement: v.array(v.string()),
+      learningStyle: v.optional(v.string()),
+      motivationFactors: v.array(v.string()),
+      recommendedFocus: v.array(v.string()),
+      nextLevelReadiness: v.boolean(),
+    }),
+    dataPoints: v.object({
+      lessonsAnalyzed: v.number(),
+      timeframeWeeks: v.number(),
+      averageSkillScores: v.object({
+        reading: v.number(),
+        writing: v.number(),
+        speaking: v.number(),
+        listening: v.number(),
+        grammar: v.number(),
+        vocabulary: v.number(),
+      }),
+      progressTrend: v.union(v.literal("improving"), v.literal("stable"), v.literal("declining")),
+    }),
+    generatedBy: v.union(v.literal("openai"), v.literal("claude")),
+    createdAt: v.number(),
+    validUntil: v.number(), // Timestamp when analysis expires
+  })
+    .index("by_student_and_teacher", ["studentId", "teacherId"])
+    .index("by_student_and_type", ["studentId", "analysisType"])
+    .index("by_teacher_and_created", ["teacherId", "createdAt"])
+    .index("by_valid_until", ["validUntil"]),
 });

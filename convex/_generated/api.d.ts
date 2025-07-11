@@ -13,11 +13,17 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as aiGeneration from "../aiGeneration.js";
+import type * as aiLessonPlans from "../aiLessonPlans.js";
+import type * as aiService from "../aiService.js";
 import type * as analytics from "../analytics.js";
 import type * as emails from "../emails.js";
+import type * as lessonGeneration from "../lessonGeneration.js";
 import type * as lessons from "../lessons.js";
 import type * as progress from "../progress.js";
+import type * as progressAnalysis from "../progressAnalysis.js";
 import type * as students from "../students.js";
+import type * as test from "../test.js";
 import type * as users from "../users.js";
 
 /**
@@ -29,11 +35,17 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  aiGeneration: typeof aiGeneration;
+  aiLessonPlans: typeof aiLessonPlans;
+  aiService: typeof aiService;
   analytics: typeof analytics;
   emails: typeof emails;
+  lessonGeneration: typeof lessonGeneration;
   lessons: typeof lessons;
   progress: typeof progress;
+  progressAnalysis: typeof progressAnalysis;
   students: typeof students;
+  test: typeof test;
   users: typeof users;
 }>;
 export declare const api: FilterApi<
