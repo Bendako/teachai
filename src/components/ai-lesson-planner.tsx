@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAction } from "convex/react";
+import { useState, useEffect, useCallback } from "react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
@@ -36,6 +36,14 @@ interface GeneratedPlanData {
   };
 }
 
+interface UploadedFile {
+  id: Id<"_storage">;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+}
+
 export function AILessonPlanner({ 
   studentId, 
   studentName, 
@@ -48,6 +56,9 @@ export function AILessonPlanner({
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlanData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
   
   const [planParams, setPlanParams] = useState({
     lessonDuration: 60,
@@ -58,6 +69,7 @@ export function AILessonPlanner({
 
   const generateComprehensiveLessonPlan = useAction(api.lessonGeneration.generateComprehensiveLessonPlan);
   const createLessonFromAILessonPlan = useAction(api.lessonGeneration.createLessonFromAILessonPlan);
+  const generateUploadUrl = useMutation(api.aiService.generateUploadUrl);
 
   const skillOptions = [
     "reading", "writing", "speaking", "listening", "grammar", "vocabulary"
@@ -102,6 +114,108 @@ export function AILessonPlanner({
     }));
   };
 
+  const handleFileUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+      'image/gif'
+    ];
+
+    const validFiles = fileArray.filter(file => {
+      if (file.size > maxFileSize) {
+        setError(`File "${file.name}" is too large. Maximum size is 10MB.`);
+        return false;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        setError(`File "${file.name}" is not a supported format. Please use PDF, Word, text, or image files.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const uploadPromises = validFiles.map(async (file) => {
+        const uploadUrl = await generateUploadUrl();
+        
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+
+        const { storageId } = await response.json();
+        
+        return {
+          id: storageId,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        };
+      });
+
+      const uploadedFileData = await Promise.all(uploadPromises);
+      setUploadedFiles(prev => [...prev, ...uploadedFileData]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload files");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeFile = (fileId: Id<"_storage">) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileUpload(files);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('document')) return '📝';
+    if (fileType.includes('image')) return '🖼️';
+    if (fileType.includes('text')) return '📃';
+    return '📎';
+  };
+
   const handleGeneratePlan = async () => {
     const focusSkills = planParams.focusSkills || [];
     if (focusSkills.length === 0) {
@@ -120,7 +234,8 @@ export function AILessonPlanner({
         focusSkills: focusSkills,
         lessonDuration: planParams.lessonDuration,
         specificGoals: (planParams.specificGoals || []).filter(goal => goal.trim() !== ""),
-        additionalContext: planParams.additionalContext || undefined
+        additionalContext: planParams.additionalContext || undefined,
+        attachedFiles: uploadedFiles.length > 0 ? uploadedFiles.map(f => f.id) : undefined
       });
 
       if (result.success && result.lessonPlan && result.lessonPlanId) {
@@ -275,6 +390,82 @@ export function AILessonPlanner({
             </Button>
           </div>
 
+          {/* File Upload Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              📎 Attach Reference Materials (optional)
+            </label>
+            <div className="space-y-4">
+              {/* Upload Area */}
+              <div
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                  isDragOver 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                }`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              >
+                <div className="space-y-3">
+                  <div className="text-4xl">📁</div>
+                  <div>
+                    <p className="text-lg font-medium text-gray-700">
+                      Drop files here or 
+                      <label className="text-blue-600 hover:text-blue-700 cursor-pointer ml-1">
+                        browse
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                          onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                          className="hidden"
+                        />
+                      </label>
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      PDF, Word, Text, or Image files (max 10MB each)
+                    </p>
+                  </div>
+                  {isUploading && (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-sm text-blue-600">Uploading...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Uploaded Files List */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700">Uploaded Files ({uploadedFiles.length})</h4>
+                  <div className="grid gap-2">
+                    {uploadedFiles.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">{getFileIcon(file.type)}</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                            <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Additional Context */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -305,7 +496,7 @@ export function AILessonPlanner({
             </Button>
             <Button
               onClick={handleGeneratePlan}
-              disabled={isGenerating || (planParams.focusSkills || []).length === 0}
+              disabled={isGenerating || isUploading || (planParams.focusSkills || []).length === 0}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isGenerating ? (
@@ -352,6 +543,20 @@ export function AILessonPlanner({
                 </div>
               </div>
             </div>
+
+            {/* Show attached files if any */}
+            {uploadedFiles.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-700 mb-2">Attached Reference Materials</h4>
+                <div className="flex flex-wrap gap-2">
+                  {uploadedFiles.map((file) => (
+                    <span key={file.id} className="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">
+                      {getFileIcon(file.type)} {file.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mb-4">
               <h4 className="font-semibold text-gray-700 mb-2">Description</h4>

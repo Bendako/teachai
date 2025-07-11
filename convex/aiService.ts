@@ -1,7 +1,7 @@
 "use node";
 
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, mutation } from "./_generated/server";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -316,6 +316,24 @@ export const generateAILessonPlanSimple = action({
         error: errorMessage,
       };
     }
+  },
+});
+
+// Generate upload URL for file attachments
+export const generateUploadUrl = mutation({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Get file URL for viewing uploaded files
+export const getFileUrl = mutation({
+  args: { storageId: v.id("_storage") },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.storageId);
   },
 });
 

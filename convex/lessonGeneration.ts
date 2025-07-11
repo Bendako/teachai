@@ -123,6 +123,7 @@ export const generateComprehensiveLessonPlan = action({
     lessonDuration: v.optional(v.number()),
     specificGoals: v.optional(v.array(v.string())),
     additionalContext: v.optional(v.string()),
+    attachedFiles: v.optional(v.array(v.id("_storage"))),
   },
   returns: v.object({
     success: v.boolean(),
