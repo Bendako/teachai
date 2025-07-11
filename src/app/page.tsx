@@ -65,7 +65,7 @@ export default function Home() {
                   <div className="text-center">
                     <div className="text-3xl mb-3">🎯</div>
                     <h3 className="font-semibold text-gray-900 mb-2">Personalized learning</h3>
-                    <p className="text-sm text-gray-600">AI adapts to each student's skill level and goals</p>
+                    <p className="text-sm text-gray-600">AI adapts to each student&apos;s skill level and goals</p>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl mb-3">📊</div>
@@ -182,7 +182,7 @@ function TeacherDashboard() {
     );
   }
 
-  // Create user if they don&apos;t exist
+  // Create user if they do not exist
   if (user && currentUser === null) {
     createUser({
       clerkId: user.id,
@@ -212,20 +212,10 @@ function TeacherDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm p-8 border border-blue-100">
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">
-          Welcome back, {currentUser.name}! 👋
-        </h2>
-        <p className="text-gray-700 text-lg">
-          Ready to manage your students and plan some amazing lessons?
-        </p>
-      </div>
-
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard title="Total Students" value="1" icon="👥" />
-        <StatCard title="This Week's Lessons" value="3" icon="📚" />
+        <StatCard title="This Week&apos;s Lessons" value="3" icon="📚" />
         <StatCard title="Progress Reports" value="3" icon="📊" />
         <StatCard title="Analytics" value="📊" icon="🔍" isAnalytics={true} onClick={() => setShowAnalytics(true)} />
       </div>
