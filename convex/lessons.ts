@@ -158,3 +158,53 @@ export const getLesson = query({
     return await ctx.db.get(args.lessonId);
   },
 }); 
+
+// Get or create a lesson for a student (reuse active lessons)
+export const getOrCreateLesson = mutation({
+  args: {
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    duration: v.optional(v.number()),
+  },
+  returns: v.id("lessons"),
+  handler: async (ctx, args) => {
+    // First, check if there's an existing active lesson (planned or in_progress)
+    const existingLesson = await ctx.db
+      .query("lessons")
+      .withIndex("by_student_and_scheduled", (q) => q.eq("studentId", args.studentId))
+      .filter((q) => 
+        q.or(
+          q.eq(q.field("status"), "planned"),
+          q.eq(q.field("status"), "in_progress")
+        )
+      )
+      .order("desc")
+      .first();
+
+    if (existingLesson) {
+      // Update the existing lesson to in_progress if it was planned
+      if (existingLesson.status === "planned") {
+        await ctx.db.patch(existingLesson._id, {
+          status: "in_progress",
+          updatedAt: Date.now(),
+        });
+      }
+      return existingLesson._id;
+    }
+
+    // No existing active lesson, create a new one
+    return await ctx.db.insert("lessons", {
+      teacherId: args.teacherId,
+      studentId: args.studentId,
+      title: args.title,
+      description: args.description,
+      scheduledAt: Date.now(),
+      duration: args.duration || 60,
+      status: "in_progress",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+}); 

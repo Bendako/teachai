@@ -26,6 +26,7 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
   const existingProgress = useQuery(api.progress.getProgressByLesson, { lessonId });
   const createProgress = useMutation(api.progress.createProgress);
   const updateProgress = useMutation(api.progress.updateProgress);
+  const updateLessonStatus = useMutation(api.lessons.updateLessonStatus);
 
   const [skills, setSkills] = useState<Skills>({
     reading: 5,
@@ -118,6 +119,11 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
 
   const handleComplete = async () => {
     await handleSave();
+    // Mark the lesson as completed
+    await updateLessonStatus({
+      lessonId,
+      status: "completed",
+    });
     onComplete?.();
   };
 

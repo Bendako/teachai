@@ -106,25 +106,24 @@ function StudentCard({ student, teacherId, onStartLesson }: {
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
 }) {
-  const createLesson = useMutation(api.lessons.createLesson);
-  const [isCreatingLesson, setIsCreatingLesson] = useState(false);
+  const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
+  const [isStartingLesson, setIsStartingLesson] = useState(false);
 
   const handleStartLesson = async () => {
-    setIsCreatingLesson(true);
+    setIsStartingLesson(true);
     try {
-      const lessonId = await createLesson({
+      const lessonId = await getOrCreateLesson({
         teacherId,
         studentId: student._id,
         title: `Lesson with ${student.name}`,
         description: `English lesson session`,
-        scheduledAt: Date.now(),
         duration: 60, // 60 minutes default
       });
       onStartLesson(student._id, lessonId);
     } catch (error) {
-      console.error("Failed to create lesson:", error);
+      console.error("Failed to start lesson:", error);
     } finally {
-      setIsCreatingLesson(false);
+      setIsStartingLesson(false);
     }
   };
   return (
@@ -161,11 +160,11 @@ function StudentCard({ student, teacherId, onStartLesson }: {
           </Button>
           <Button 
             onClick={handleStartLesson}
-            disabled={isCreatingLesson}
+            disabled={isStartingLesson}
             size="sm" 
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            {isCreatingLesson ? "Starting..." : "Start Lesson"}
+            {isStartingLesson ? "Starting..." : "Start Lesson"}
           </Button>
         </div>
       </div>
