@@ -123,8 +123,22 @@ export function AILessonPlanner({
         additionalContext: planParams.additionalContext || undefined
       });
 
-      setGeneratedPlan(result as GeneratedPlanData);
-      onPlanCreated?.(result.lessonPlanId);
+      if (result.success && result.lessonPlan && result.lessonPlanId) {
+        const planData: GeneratedPlanData = {
+          lessonPlanId: result.lessonPlanId,
+          title: result.lessonPlan.title,
+          description: result.lessonPlan.description,
+          difficulty: result.lessonPlan.difficulty,
+          estimatedDuration: result.lessonPlan.estimatedDuration,
+          objectives: result.lessonPlan.objectives,
+          activities: result.lessonPlan.activities,
+          homework: result.lessonPlan.homework,
+        };
+        setGeneratedPlan(planData);
+        onPlanCreated?.(result.lessonPlanId);
+      } else {
+        throw new Error(result.error || "Failed to generate lesson plan");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate lesson plan");
       console.error("Error generating lesson plan:", err);
@@ -139,8 +153,9 @@ export function AILessonPlanner({
     try {
       const lessonId = await createLessonFromAILessonPlan({
         aiLessonPlanId: generatedPlan.lessonPlanId,
-        scheduledDate: Date.now(),
-        teacherId
+        scheduledAt: Date.now(),
+        teacherId,
+        studentId
       });
       
       // Close the planner

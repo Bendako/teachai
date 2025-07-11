@@ -3,6 +3,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -47,6 +48,32 @@ interface LessonPlanGenerationRequest {
   };
 }
 
+interface ProgressAnalysisResult {
+  studentLevel: string;
+  recommendations: {
+    focusSkills: string[];
+    suggestedActivities: string[];
+    difficultyAdjustment: "increase" | "maintain" | "decrease";
+  };
+  progressTrend: "improving" | "stable" | "declining";
+  progressData: {
+    recentSkillsAverage: {
+      reading: number;
+      writing: number;
+      speaking: number;
+      listening: number;
+      grammar: number;
+      vocabulary: number;
+    };
+    weakAreas: string[];
+    strongAreas: string[];
+    recentTopics: string[];
+    totalLessons: number;
+  };
+}
+
+
+
 interface GeneratedLessonPlan {
   title: string;
   description: string;
@@ -69,6 +96,23 @@ interface GeneratedLessonPlan {
   assessmentCriteria: string[];
   adaptationNotes: string;
 }
+
+// Type for the return value of generateComprehensiveLessonPlan
+type GenerateComprehensiveLessonPlanResult = {
+  success: boolean;
+  generationId?: Id<"ai_generation_history">;
+  lessonPlanId?: Id<"ai_lesson_plans">;
+  lessonPlan?: GeneratedLessonPlan;
+  progressAnalysis?: {
+    recommendations: {
+      focusSkills: string[];
+      suggestedActivities: string[];
+      difficultyAdjustment: "increase" | "maintain" | "decrease";
+    };
+    progressTrend: "improving" | "stable" | "declining";
+  };
+  error?: string;
+};
 
 // Generate comprehensive lesson plan with AI
 export const generateComprehensiveLessonPlan = action({
@@ -116,7 +160,7 @@ export const generateComprehensiveLessonPlan = action({
     })),
     error: v.optional(v.string()),
   }),
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<GenerateComprehensiveLessonPlanResult> => {
     const startTime = Date.now();
     
     try {
@@ -130,7 +174,7 @@ export const generateComprehensiveLessonPlan = action({
       }
 
       // Step 2: Analyze student progress
-      const progressAnalysis = await ctx.runQuery(api.progressAnalysis.analyzeStudentProgress, {
+      const progressAnalysis: ProgressAnalysisResult = await ctx.runQuery(api.progressAnalysis.analyzeStudentProgress, {
         studentId: args.studentId,
         timeframeWeeks: 4,
       });
@@ -141,7 +185,7 @@ export const generateComprehensiveLessonPlan = action({
       const specificGoals = args.specificGoals || [`Improve ${focusSkills.join(" and ")}`];
 
       // Step 4: Create generation history record
-      const generationId = await ctx.runMutation(api.aiGeneration.createGenerationHistory, {
+      const generationId: Id<"ai_generation_history"> = await ctx.runMutation(api.aiGeneration.createGenerationHistory, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         aiProvider: AI_CONFIG.primaryProvider,
@@ -185,7 +229,7 @@ export const generateComprehensiveLessonPlan = action({
       });
 
       // Step 7: Create AI lesson plan record
-      const lessonPlanId = await ctx.runMutation(api.aiLessonPlans.createAILessonPlan, {
+      const lessonPlanId: Id<"ai_lesson_plans"> = await ctx.runMutation(api.aiLessonPlans.createAILessonPlan, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         generationId,
@@ -215,6 +259,13 @@ export const generateComprehensiveLessonPlan = action({
   },
 });
 
+// Type for the return value of createLessonFromAILessonPlan
+type CreateLessonFromAILessonPlanResult = {
+  success: boolean;
+  lessonId?: Id<"lessons">;
+  error?: string;
+};
+
 // Convert AI lesson plan to regular lesson
 export const createLessonFromAILessonPlan = action({
   args: {
@@ -230,7 +281,7 @@ export const createLessonFromAILessonPlan = action({
     lessonId: v.optional(v.id("lessons")),
     error: v.optional(v.string()),
   }),
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<CreateLessonFromAILessonPlanResult> => {
     try {
       // Get the AI lesson plan
       const aiLessonPlan = await ctx.runQuery(api.aiLessonPlans.getAILessonPlan, {
@@ -242,7 +293,7 @@ export const createLessonFromAILessonPlan = action({
       }
 
       // Create regular lesson with AI-generated content
-      const lessonId = await ctx.runMutation(api.lessons.createLesson, {
+      const lessonId: Id<"lessons"> = await ctx.runMutation(api.lessons.createLesson, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         title: args.title || aiLessonPlan.title,
@@ -251,7 +302,7 @@ export const createLessonFromAILessonPlan = action({
         duration: aiLessonPlan.estimatedDuration,
         lessonPlan: {
           objectives: aiLessonPlan.objectives,
-                     activities: aiLessonPlan.activities.map((activity: any) => 
+          activities: aiLessonPlan.activities.map((activity) => 
              `${activity.name}: ${activity.description} (${activity.duration} min)`
            ),
           materials: aiLessonPlan.materials,
@@ -281,6 +332,19 @@ export const createLessonFromAILessonPlan = action({
   },
 });
 
+// Type for the return value of batchGenerateLessonPlans
+type BatchGenerateLessonPlansResult = {
+  success: boolean;
+  results: Array<{
+    studentId: Id<"students">;
+    success: boolean;
+    lessonPlanId?: Id<"ai_lesson_plans">;
+    error?: string;
+  }>;
+  totalGenerated: number;
+  totalFailed: number;
+};
+
 // Batch generate lesson plans for multiple students
 export const batchGenerateLessonPlans = action({
   args: {
@@ -300,14 +364,19 @@ export const batchGenerateLessonPlans = action({
     totalGenerated: v.number(),
     totalFailed: v.number(),
   }),
-  handler: async (ctx, args) => {
-    const results = [];
+  handler: async (ctx, args): Promise<BatchGenerateLessonPlansResult> => {
+    const results: Array<{
+      studentId: Id<"students">;
+      success: boolean;
+      lessonPlanId?: Id<"ai_lesson_plans">;
+      error?: string;
+    }> = [];
     let totalGenerated = 0;
     let totalFailed = 0;
 
     for (const studentId of args.studentIds) {
       try {
-        const result = await ctx.runAction(api.lessonGeneration.generateComprehensiveLessonPlan, {
+        const result: GenerateComprehensiveLessonPlanResult = await ctx.runAction(api.lessonGeneration.generateComprehensiveLessonPlan, {
           teacherId: args.teacherId,
           studentId,
           lessonDuration: args.lessonDuration,

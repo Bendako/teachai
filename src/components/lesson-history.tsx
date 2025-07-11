@@ -51,7 +51,7 @@ export function LessonHistory({ studentId, studentName, onClose }: LessonHistory
     );
   }
 
-  const completedLessons = lessonHistory.filter(lesson => lesson.lessonStatus === "completed");
+  const completedLessons = lessonHistory.filter((lesson: LessonHistoryItem) => lesson.lessonStatus === "completed");
 
   return (
     <div className="space-y-6">
@@ -82,7 +82,7 @@ export function LessonHistory({ studentId, studentName, onClose }: LessonHistory
           </div>
         ) : (
           <div className="space-y-4">
-            {lessonHistory.map((lesson, index) => (
+            {lessonHistory.map((lesson: LessonHistoryItem, index: number) => (
               <LessonCard 
                 key={lesson.lessonId} 
                 lesson={lesson} 

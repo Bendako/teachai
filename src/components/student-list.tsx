@@ -73,7 +73,7 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
         </div>
       ) : (
         <div className="grid gap-4">
-          {students.map((student) => (
+          {students.map((student: Student) => (
             <StudentCard 
               key={student._id} 
               student={student}
