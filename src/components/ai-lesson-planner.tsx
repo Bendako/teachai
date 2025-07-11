@@ -316,103 +316,140 @@ export function AILessonPlanner({
 
       {!generatedPlan ? (
         // Planning Form
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Lesson Duration */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lesson Duration (minutes)
-            </label>
-            <select
-              value={planParams.lessonDuration}
-              onChange={(e) => setPlanParams(prev => ({ ...prev, lessonDuration: parseInt(e.target.value) }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={30}>30 minutes</option>
-              <option value={45}>45 minutes</option>
-              <option value={60}>60 minutes</option>
-              <option value={90}>90 minutes</option>
-            </select>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Lesson Configuration</h3>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-800">
+                Lesson Duration (minutes)
+              </label>
+              <select
+                value={planParams.lessonDuration}
+                onChange={(e) => setPlanParams(prev => ({ ...prev, lessonDuration: parseInt(e.target.value) }))}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-gray-900 bg-gray-50 focus:bg-white font-medium"
+              >
+                <option value={30}>⏱️ 30 minutes - Quick session</option>
+                <option value={45}>🕐 45 minutes - Standard lesson</option>
+                <option value={60}>🕑 60 minutes - Full lesson</option>
+                <option value={90}>🕒 90 minutes - Extended session</option>
+              </select>
+            </div>
           </div>
 
           {/* Focus Skills */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Focus Skills (select 1-3)
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Focus Skills</h3>
+                <p className="text-sm text-gray-600">Select 1-3 skills to emphasize in this lesson</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {skillOptions.map((skill) => (
-                <label key={skill} className="flex items-center space-x-2">
+                <label key={skill} className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={(planParams.focusSkills || []).includes(skill)}
                     onChange={(e) => handleSkillChange(skill, e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <span className="text-sm text-gray-700 capitalize">{skill}</span>
+                  <span className="text-sm font-medium text-gray-800 capitalize">{skill}</span>
                 </label>
               ))}
             </div>
           </div>
 
           {/* Specific Goals */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Specific Learning Goals
-            </label>
-            <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Specific Learning Goals</h3>
+                <p className="text-sm text-gray-600">Define what the student should achieve in this lesson</p>
+              </div>
+            </div>
+            <div className="space-y-3">
               {(planParams.specificGoals || [""]).map((goal, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={index} className="flex gap-3">
                   <input
                     type="text"
                     value={goal}
                     onChange={(e) => handleGoalChange(index, e.target.value)}
                     placeholder={`Learning goal ${index + 1}...`}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
                   />
                   {(planParams.specificGoals || []).length > 1 && (
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={() => removeGoal(index)}
-                      className="px-2"
+                      className="px-4 py-3 border-2 border-red-200 text-red-600 rounded-xl hover:bg-red-50 hover:border-red-300 focus:ring-4 focus:ring-red-100 transition-all duration-200"
                     >
-                      ✕
-                    </Button>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   )}
                 </div>
               ))}
             </div>
-            <Button
-              variant="outline"
+            <button
               onClick={addGoal}
-              className="mt-2 text-sm"
+              className="inline-flex items-center px-4 py-2 border-2 border-green-300 text-green-700 rounded-xl hover:bg-green-50 hover:border-green-400 focus:ring-4 focus:ring-green-100 transition-all duration-200 font-medium"
             >
-              + Add Goal
-            </Button>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Goal
+            </button>
           </div>
 
           {/* File Upload Section */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              📎 Attach Reference Materials (optional)
-            </label>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">📎 Attach Reference Materials</h3>
+                <p className="text-sm text-gray-600">Upload files to provide context for the AI lesson planner</p>
+              </div>
+            </div>
             <div className="space-y-4">
               {/* Upload Area */}
               <div
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                className={`border-3 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
                   isDragOver 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                    ? 'border-purple-500 bg-purple-50 scale-105' 
+                    : 'border-gray-300 hover:border-purple-400 bg-gray-50 hover:bg-purple-25'
                 }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
               >
-                <div className="space-y-3">
-                  <div className="text-4xl">📁</div>
+                <div className="space-y-4">
+                  <div className="text-5xl">📁</div>
                   <div>
-                    <p className="text-lg font-medium text-gray-700">
+                    <p className="text-xl font-semibold text-gray-800 mb-2">
                       Drop files here or 
-                      <label className="text-blue-600 hover:text-blue-700 cursor-pointer ml-1">
+                      <label className="text-purple-600 hover:text-purple-700 cursor-pointer ml-1 underline underline-offset-2">
                         browse
                         <input
                           type="file"
@@ -423,14 +460,14 @@ export function AILessonPlanner({
                         />
                       </label>
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      PDF, Word, Text, or Image files (max 10MB each)
+                    <p className="text-sm text-gray-600 bg-white px-4 py-2 rounded-full inline-block border border-gray-200">
+                      📄 PDF • 📝 Word • 📃 Text • 🖼️ Images (max 10MB each)
                     </p>
                   </div>
                   {isUploading && (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      <span className="text-sm text-blue-600">Uploading...</span>
+                    <div className="flex items-center justify-center space-x-3 bg-white px-6 py-3 rounded-xl border border-purple-200">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                      <span className="text-sm font-medium text-purple-700">Uploading files...</span>
                     </div>
                   )}
                 </div>
@@ -438,23 +475,32 @@ export function AILessonPlanner({
 
               {/* Uploaded Files List */}
               {uploadedFiles.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Uploaded Files ({uploadedFiles.length})</h4>
-                  <div className="grid gap-2">
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-800 flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                    Uploaded Files ({uploadedFiles.length})
+                  </h4>
+                  <div className="grid gap-3">
                     {uploadedFiles.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-2xl">{getFileIcon(file.type)}</span>
+                      <div key={file.id} className="flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-xl hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center text-2xl">
+                            {getFileIcon(file.type)}
+                          </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                            <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                            <p className="text-sm font-semibold text-gray-900">{file.name}</p>
+                            <p className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full inline-block mt-1">
+                              {formatFileSize(file.size)}
+                            </p>
                           </div>
                         </div>
                         <button
                           onClick={() => removeFile(file.id)}
-                          className="text-red-500 hover:text-red-700 p-1 rounded"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -467,47 +513,68 @@ export function AILessonPlanner({
           </div>
 
           {/* Additional Context */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Context (optional)
-            </label>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Additional Context</h3>
+                <p className="text-sm text-gray-600">Provide extra details to enhance the lesson plan</p>
+              </div>
+            </div>
             <textarea
               value={planParams.additionalContext}
               onChange={(e) => setPlanParams(prev => ({ ...prev, additionalContext: e.target.value }))}
               placeholder="Any specific topics, student interests, upcoming exams, or special considerations..."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={4}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white resize-none"
             />
           </div>
 
           {/* Error Display */}
           {error && (
-            <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-              <div className="text-red-800">
-                <strong>Error:</strong> {error}
+            <div className="p-4 rounded-xl bg-red-50 border-2 border-red-200">
+              <div className="flex items-center space-x-3">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-red-800 font-medium">
+                  <strong>Error:</strong> {error}
+                </div>
               </div>
             </div>
           )}
 
           {/* Generate Button */}
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:ring-4 focus:ring-gray-100 transition-all duration-200"
+            >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleGeneratePlan}
               disabled={isGenerating || isUploading || (planParams.focusSkills || []).length === 0}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transform hover:scale-[1.02] transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                   Generating with Claude...
-                </>
+                </div>
               ) : (
-                <>🤖 Generate AI Lesson Plan</>
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  🤖 Generate AI Lesson Plan
+                </div>
               )}
-            </Button>
+            </button>
           </div>
         </div>
       ) : (
