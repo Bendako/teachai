@@ -6,9 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "setup:convex": "npx convex dev --once",
-    "deploy:teachai": "npm run build && npx convex deploy"
+    "lint": "next lint"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.24.0",
@@ -32,6 +30,5 @@
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "description": "A modern web application: teachai - built with Next.js,Convex,Clerk,TypeScript,Tailwind CSS"
+  }
 }
