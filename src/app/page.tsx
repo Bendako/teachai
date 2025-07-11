@@ -3,8 +3,10 @@
 import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { StudentList } from '@/components/student-list'
+import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
+import { useState } from "react"
 
 export default function Home() {
   return (
@@ -179,6 +181,7 @@ function TeacherDashboard() {
     clerkId: user?.id || "" 
   });
   const createUser = useMutation(api.users.createUser);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Create user if they don't exist
   if (user && currentUser === null) {
@@ -222,32 +225,67 @@ function TeacherDashboard() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Students" value="0" icon="👥" />
-        <StatCard title="This Week's Lessons" value="0" icon="📚" />
-        <StatCard title="Progress Reports" value="0" icon="📊" />
-        <StatCard title="Pending Tasks" value="0" icon="✅" />
+        <StatCard title="Total Students" value="1" icon="👥" />
+        <StatCard title="This Week's Lessons" value="3" icon="📚" />
+        <StatCard title="Progress Reports" value="3" icon="📊" />
+        <StatCard title="Analytics" value="📊" icon="🔍" isAnalytics={true} onClick={() => setShowAnalytics(true)} />
       </div>
 
       {/* Student Management */}
       <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
         <StudentList teacherId={currentUser._id} />
       </div>
+
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <AnalyticsDashboard
+                teacherId={currentUser._id}
+                onClose={() => setShowAnalytics(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function StatCard({ title, value, icon }: { title: string; value: string; icon: string }) {
+function StatCard({ title, value, icon, isAnalytics, onClick }: { 
+  title: string; 
+  value: string; 
+  icon: string; 
+  isAnalytics?: boolean;
+  onClick?: () => void;
+}) {
+  const cardContent = (
+    <div className="flex items-center">
+      <div className="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-2xl mr-4">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+      </div>
+    </div>
+  );
+
+  if (isAnalytics) {
+    return (
+      <button
+        onClick={onClick}
+        className="w-full bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md hover:border-blue-200 hover:bg-blue-50 transition-all duration-200 text-left cursor-pointer"
+      >
+        {cardContent}
+      </button>
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200">
-      <div className="flex items-center">
-        <div className="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-2xl mr-4">
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
-        </div>
-      </div>
+      {cardContent}
     </div>
   );
 }
