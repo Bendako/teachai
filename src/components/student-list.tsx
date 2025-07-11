@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { ProgressTracker } from "./progress-tracker";
 import { LessonHistory } from "./lesson-history";
 import { useState } from "react";
+import { EmailManagement } from "./email-management";
 
 export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   const students = useQuery(api.students.getStudentsByTeacher, { 
@@ -23,6 +24,12 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   const [viewingHistory, setViewingHistory] = useState<{
     studentId: Id<"students">;
     studentName: string;
+  } | null>(null);
+
+  const [emailModal, setEmailModal] = useState<{
+    studentId: Id<"students">;
+    studentName: string;
+    parentEmail?: string;
   } | null>(null);
 
   if (students === undefined) {
@@ -69,6 +76,9 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               }
               onViewHistory={(studentId, studentName) =>
                 setViewingHistory({ studentId, studentName })
+              }
+              onOpenEmail={(studentId, studentName, parentEmail) =>
+                setEmailModal({ studentId, studentName, parentEmail })
               }
             />
           ))}
@@ -127,13 +137,20 @@ type Student = {
   email?: string;
   level: "beginner" | "intermediate" | "advanced";
   goals: string[];
+  parentInfo?: {
+    name: string;
+    email: string;
+    phone?: string;
+    relationship: string;
+  };
 };
 
-function StudentCard({ student, teacherId, onStartLesson, onViewHistory }: { 
+function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail }: { 
   student: Student; 
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
   onViewHistory: (studentId: Id<"students">, studentName: string) => void;
+  onOpenEmail: (studentId: Id<"students">, studentName: string, parentEmail?: string) => void;
 }) {
   const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
   const [isStartingLesson, setIsStartingLesson] = useState(false);

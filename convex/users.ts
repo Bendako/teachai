@@ -52,6 +52,28 @@ export const getUserByClerkId = query({
   },
 });
 
+// Get user by ID
+export const getUserById = query({
+  args: { userId: v.id("users") },
+  returns: v.union(
+    v.object({
+      _id: v.id("users"),
+      _creationTime: v.number(),
+      clerkId: v.string(),
+      name: v.string(),
+      email: v.string(),
+      imageUrl: v.optional(v.string()),
+      role: v.union(v.literal("teacher"), v.literal("student"), v.literal("parent")),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
+  },
+});
+
 // Get all users
 export const getUsers = query({
   handler: async (ctx) => {
