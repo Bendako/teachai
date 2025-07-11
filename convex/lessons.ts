@@ -208,3 +208,184 @@ export const getOrCreateLesson = mutation({
     });
   },
 }); 
+
+// Get lessons for a specific date range (for calendar view)
+export const getLessonsByDateRange = query({
+  args: { 
+    teacherId: v.id("users"),
+    startDate: v.number(), // Unix timestamp for start of date range
+    endDate: v.number(),   // Unix timestamp for end of date range
+  },
+  returns: v.array(v.object({
+    _id: v.id("lessons"),
+    _creationTime: v.number(),
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    scheduledAt: v.number(),
+    duration: v.number(),
+    status: v.union(
+      v.literal("planned"), 
+      v.literal("in_progress"), 
+      v.literal("completed"), 
+      v.literal("cancelled")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("lessons")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .filter((q) => 
+        q.and(
+          q.gte(q.field("scheduledAt"), args.startDate),
+          q.lte(q.field("scheduledAt"), args.endDate)
+        )
+      )
+      .order("asc")
+      .collect();
+  },
+});
+
+// Get lessons for a specific day
+export const getLessonsByDay = query({
+  args: { 
+    teacherId: v.id("users"),
+    date: v.number(), // Unix timestamp for the specific day
+  },
+  returns: v.array(v.object({
+    _id: v.id("lessons"),
+    _creationTime: v.number(),
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    scheduledAt: v.number(),
+    duration: v.number(),
+    status: v.union(
+      v.literal("planned"), 
+      v.literal("in_progress"), 
+      v.literal("completed"), 
+      v.literal("cancelled")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })),
+  handler: async (ctx, args) => {
+    // Get start and end of the day
+    const startOfDay = new Date(args.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(args.date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return await ctx.db
+      .query("lessons")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .filter((q) => 
+        q.and(
+          q.gte(q.field("scheduledAt"), startOfDay.getTime()),
+          q.lte(q.field("scheduledAt"), endOfDay.getTime())
+        )
+      )
+      .order("asc")
+      .collect();
+  },
+});
+
+// Update lesson schedule (reschedule)
+export const rescheduleLesson = mutation({
+  args: {
+    lessonId: v.id("lessons"),
+    newScheduledAt: v.number(),
+    newDuration: v.optional(v.number()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const updateData: {
+      scheduledAt: number;
+      updatedAt: number;
+      duration?: number;
+    } = {
+      scheduledAt: args.newScheduledAt,
+      updatedAt: Date.now(),
+    };
+    
+    if (args.newDuration !== undefined) {
+      updateData.duration = args.newDuration;
+    }
+    
+    await ctx.db.patch(args.lessonId, updateData);
+  },
+});
+
+// Check for scheduling conflicts
+export const checkSchedulingConflicts = query({
+  args: {
+    teacherId: v.id("users"),
+    scheduledAt: v.number(),
+    duration: v.number(),
+    excludeLessonId: v.optional(v.id("lessons")), // For rescheduling existing lessons
+  },
+  returns: v.array(v.object({
+    _id: v.id("lessons"),
+    title: v.string(),
+    scheduledAt: v.number(),
+    duration: v.number(),
+  })),
+  handler: async (ctx, args) => {
+    const lessonStart = args.scheduledAt;
+    const lessonEnd = args.scheduledAt + (args.duration * 60 * 1000); // Convert minutes to milliseconds
+    
+    // Query lessons that might conflict
+    const existingLessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .filter((q) => 
+        q.and(
+          q.neq(q.field("status"), "cancelled"),
+          // Check if the lesson overlaps with our time slot
+          q.or(
+            // Existing lesson starts during our lesson
+            q.and(
+              q.gte(q.field("scheduledAt"), lessonStart),
+              q.lt(q.field("scheduledAt"), lessonEnd)
+            ),
+            // Our lesson starts during existing lesson
+            q.and(
+              q.lte(q.field("scheduledAt"), lessonStart),
+              q.gt(
+                q.field("scheduledAt"), 
+                lessonStart - 60 * 60 * 1000 // Check 1 hour before for potential overlaps
+              )
+            )
+          )
+        )
+      )
+      .collect();
+
+    // Filter out the current lesson if rescheduling
+    const conflicts = existingLessons.filter(lesson => {
+      if (args.excludeLessonId && lesson._id === args.excludeLessonId) {
+        return false;
+      }
+      
+      // Calculate existing lesson end time
+      const existingStart = lesson.scheduledAt;
+      const existingEnd = lesson.scheduledAt + (lesson.duration * 60 * 1000);
+      
+      // Check for actual overlap
+      return (
+        (lessonStart < existingEnd && lessonEnd > existingStart)
+      );
+    });
+
+    return conflicts.map(lesson => ({
+      _id: lesson._id,
+      title: lesson.title,
+      scheduledAt: lesson.scheduledAt,
+      duration: lesson.duration,
+    }));
+  },
+}); 

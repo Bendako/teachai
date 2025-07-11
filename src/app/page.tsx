@@ -5,6 +5,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { StudentList } from "../components/student-list";
 import { AnalyticsDashboard } from "../components/analytics-dashboard";
+import { LessonCalendar } from "../components/lesson-calendar";
+import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
 import { Button } from "../components/ui/button";
 import { useState, useEffect } from "react";
 
@@ -189,6 +191,10 @@ function TeacherDashboard() {
   });
   const createUser = useMutation(api.users.createUser);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState("09:00");
+  const [showScheduler, setShowScheduler] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -238,7 +244,7 @@ function TeacherDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard title="Total Students" value="1" icon="users" />
         <StatCard title="This Week&apos;s Lessons" value="3" icon="book" />
-        <StatCard title="Progress Reports" value="3" icon="chart" />
+        <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setShowCalendar(true)} />
         <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setShowAnalytics(true)} />
       </div>
 
@@ -246,6 +252,39 @@ function TeacherDashboard() {
       <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
         <StudentList teacherId={currentUser._id} />
       </div>
+
+      {/* Calendar Modal */}
+      {showCalendar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Lesson Calendar</h2>
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <LessonCalendar
+                teacherId={currentUser._id}
+                onDateClick={(date) => {
+                  setSelectedDate(date);
+                  setShowScheduler(true);
+                }}
+                onCreateLesson={(date, time) => {
+                  setSelectedDate(date);
+                  setSelectedTime(time);
+                  setShowScheduler(true);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analytics Modal */}
       {showAnalytics && (
@@ -259,6 +298,24 @@ function TeacherDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Quick Lesson Scheduler */}
+      {showScheduler && selectedDate && (
+        <QuickLessonScheduler
+          teacherId={currentUser._id}
+          selectedDate={selectedDate}
+          selectedTime={selectedTime}
+          isOpen={showScheduler}
+          onClose={() => {
+            setShowScheduler(false);
+            setSelectedDate(null);
+          }}
+          onScheduled={() => {
+            setShowScheduler(false);
+            setSelectedDate(null);
+          }}
+        />
       )}
     </div>
   );
@@ -296,6 +353,12 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
         return (
           <svg className={iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        );
+      case 'calendar':
+        return (
+          <svg className={iconProps} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         );
       default:
