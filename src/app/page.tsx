@@ -211,11 +211,11 @@ function TeacherDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm p-8 border border-blue-100">
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">
           Welcome back, {currentUser.name}! 👋
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-700 text-lg">
           Ready to manage your students and plan some amazing lessons?
         </p>
       </div>
@@ -229,7 +229,7 @@ function TeacherDashboard() {
       </div>
 
       {/* Student Management */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
         <StudentList teacherId={currentUser._id} />
       </div>
     </div>
@@ -238,12 +238,14 @@ function TeacherDashboard() {
 
 function StatCard({ title, value, icon }: { title: string; value: string; icon: string }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200">
       <div className="flex items-center">
-        <div className="text-2xl mr-3">{icon}</div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+        <div className="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-2xl mr-4">
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
         </div>
       </div>
     </div>

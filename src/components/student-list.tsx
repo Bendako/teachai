@@ -20,28 +20,33 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   } | null>(null);
 
   if (students === undefined) {
-    return <div className="p-4">Loading students...</div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-700 font-medium">Loading students...</span>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Students</h2>
+        <h2 className="text-2xl font-bold text-gray-900">My Students</h2>
         <Button 
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
         >
           Add New Student
         </Button>
       </div>
 
       {students.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No students yet</h3>
-          <p className="text-gray-500 mb-4">Get started by adding your first student</p>
+        <div className="text-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">No students yet</h3>
+          <p className="text-gray-600 mb-6 text-lg">Get started by adding your first student</p>
           <Button 
             onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"
           >
             Add Your First Student
           </Button>
@@ -127,42 +132,46 @@ function StudentCard({ student, teacherId, onStartLesson }: {
     }
   };
   return (
-    <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200">
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
-          <div className="mt-2 space-y-1">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Level:</span> 
-              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                student.level === 'beginner' ? 'bg-green-100 text-green-800' :
-                student.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
+          <h3 className="text-xl font-semibold text-gray-900 mb-1">{student.name}</h3>
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold text-gray-900">Level:</span> 
+              <span className={`ml-2 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                student.level === 'beginner' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                student.level === 'intermediate' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                'bg-purple-50 text-purple-700 border-purple-200'
               }`}>
                 {student.level.charAt(0).toUpperCase() + student.level.slice(1)}
               </span>
             </p>
             {student.email && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Email:</span> {student.email}
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900">Email:</span> {student.email}
               </p>
             )}
             {student.goals.length > 0 && (
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">Goals:</span> {student.goals.join(", ")}
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900">Goals:</span> {student.goals.join(", ")}
               </p>
             )}
           </div>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm">
+        <div className="flex space-x-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-medium"
+          >
             View Profile
           </Button>
           <Button 
             onClick={handleStartLesson}
             disabled={isStartingLesson}
             size="sm" 
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isStartingLesson ? "Starting..." : "Start Lesson"}
           </Button>
