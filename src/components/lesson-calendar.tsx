@@ -22,6 +22,13 @@ interface CalendarLesson {
   scheduledAt: number;
   duration: number;
   status: "planned" | "in_progress" | "completed" | "cancelled";
+  description?: string;
+  lessonPlan?: {
+    objectives: string[];
+    activities: string[];
+    materials: string[];
+    homework?: string;
+  };
 }
 
 export function LessonCalendar({ teacherId, onLessonClick, onDateClick, onCreateLesson }: LessonCalendarProps) {
