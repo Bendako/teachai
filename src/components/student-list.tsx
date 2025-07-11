@@ -127,6 +127,20 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </div>
         </div>
       )}
+
+      {emailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <EmailManagement
+              studentId={emailModal.studentId}
+              studentName={emailModal.studentName}
+              parentEmail={emailModal.parentEmail}
+              teacherId={teacherId}
+              onClose={() => setEmailModal(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -200,7 +214,15 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             )}
           </div>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col space-y-2">
+          <Button 
+            onClick={handleStartLesson}
+            disabled={isStartingLesson}
+            size="sm" 
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isStartingLesson ? "Starting..." : "Start Lesson"}
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
@@ -210,12 +232,12 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             View Profile
           </Button>
           <Button 
-            onClick={handleStartLesson}
-            disabled={isStartingLesson}
-            size="sm" 
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline" 
+            size="sm"
+            onClick={() => onOpenEmail(student._id, student.name, student.parentInfo?.email)}
+            className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 font-medium"
           >
-            {isStartingLesson ? "Starting..." : "Start Lesson"}
+            📧 Send Email
           </Button>
         </div>
       </div>
