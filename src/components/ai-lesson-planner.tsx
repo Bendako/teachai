@@ -69,7 +69,7 @@ export function AILessonPlanner({
 
   const generateComprehensiveLessonPlan = useAction(api.lessonGeneration.generateComprehensiveLessonPlan);
   const createLessonFromAILessonPlan = useAction(api.lessonGeneration.createLessonFromAILessonPlan);
-  const generateUploadUrl = useMutation(api.aiService.generateUploadUrl);
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
   const skillOptions = [
     "reading", "writing", "speaking", "listening", "grammar", "vocabulary"
