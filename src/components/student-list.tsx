@@ -5,6 +5,7 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 import { ProgressTracker } from "./progress-tracker";
+import { LessonHistory } from "./lesson-history";
 import { useState } from "react";
 
 export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
@@ -17,6 +18,11 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   const [activeLessonData, setActiveLessonData] = useState<{
     lessonId: Id<"lessons">;
     studentId: Id<"students">;
+  } | null>(null);
+  
+  const [viewingHistory, setViewingHistory] = useState<{
+    studentId: Id<"students">;
+    studentName: string;
   } | null>(null);
 
   if (students === undefined) {
@@ -61,6 +67,9 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               onStartLesson={(studentId, lessonId) => 
                 setActiveLessonData({ lessonId, studentId })
               }
+              onViewHistory={(studentId, studentName) =>
+                setViewingHistory({ studentId, studentName })
+              }
             />
           ))}
         </div>
@@ -94,6 +103,20 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </div>
         </div>
       )}
+
+      {viewingHistory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <LessonHistory
+                studentId={viewingHistory.studentId}
+                studentName={viewingHistory.studentName}
+                onClose={() => setViewingHistory(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -106,10 +129,11 @@ type Student = {
   goals: string[];
 };
 
-function StudentCard({ student, teacherId, onStartLesson }: { 
+function StudentCard({ student, teacherId, onStartLesson, onViewHistory }: { 
   student: Student; 
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
+  onViewHistory: (studentId: Id<"students">, studentName: string) => void;
 }) {
   const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
   const [isStartingLesson, setIsStartingLesson] = useState(false);
@@ -163,6 +187,7 @@ function StudentCard({ student, teacherId, onStartLesson }: {
           <Button 
             variant="outline" 
             size="sm"
+            onClick={() => onViewHistory(student._id, student.name)}
             className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-medium"
           >
             View Profile

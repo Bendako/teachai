@@ -229,3 +229,80 @@ export const getStudentSkillsAverage = query({
     };
   },
 }); 
+
+// Get lesson history with progress data for a student
+export const getLessonHistoryByStudent = query({
+  args: { 
+    studentId: v.id("students"),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(v.object({
+    // Lesson data
+    lessonId: v.id("lessons"),
+    lessonTitle: v.string(),
+    lessonDate: v.number(),
+    lessonDuration: v.number(),
+    lessonStatus: v.union(
+      v.literal("planned"), 
+      v.literal("in_progress"), 
+      v.literal("completed"), 
+      v.literal("cancelled")
+    ),
+    
+    // Progress data (optional if no progress recorded)
+    progressId: v.optional(v.id("progress")),
+    skills: v.optional(v.object({
+      reading: v.number(),
+      writing: v.number(),
+      speaking: v.number(),
+      listening: v.number(),
+      grammar: v.number(),
+      vocabulary: v.number(),
+    })),
+    topicsCovered: v.optional(v.array(v.string())),
+    notes: v.optional(v.string()),
+    homework: v.optional(v.object({
+      assigned: v.string(),
+      completed: v.boolean(),
+      feedback: v.optional(v.string()),
+    })),
+    progressCreatedAt: v.optional(v.number()),
+  })),
+  handler: async (ctx, args) => {
+    // Get all lessons for the student, ordered by most recent first
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_student_and_scheduled", (q) => q.eq("studentId", args.studentId))
+      .order("desc")
+      .take(args.limit || 20);
+
+    // For each lesson, try to find corresponding progress data
+    const lessonHistory = [];
+    
+    for (const lesson of lessons) {
+      const progress = await ctx.db
+        .query("progress")
+        .withIndex("by_lesson", (q) => q.eq("lessonId", lesson._id))
+        .unique();
+
+      lessonHistory.push({
+        // Lesson data
+        lessonId: lesson._id,
+        lessonTitle: lesson.title,
+        lessonDate: lesson.scheduledAt,
+        lessonDuration: lesson.duration,
+        lessonStatus: lesson.status,
+        
+        // Progress data (if exists)
+        progressId: progress?._id,
+        skills: progress?.skills,
+        topicsCovered: progress?.topicsCovered,
+        notes: progress?.notes,
+        homework: progress?.homework,
+        progressCreatedAt: progress?.createdAt,
+      });
+    }
+
+    return lessonHistory;
+  },
+}); 
