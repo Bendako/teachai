@@ -265,7 +265,7 @@ export function useAutoEmailNotification() {
         teacherId,
       });
       return result;
-    } catch (_error) {
+    } catch {
       return { success: false, error: "Failed to send email" };
     }
   };
