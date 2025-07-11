@@ -273,7 +273,7 @@ function generateLessonSummaryHTML({ student, lesson, progress, teacher }: {
 
           ${progress.topicsCovered && progress.topicsCovered.length > 0 ? `
             <div class="topics">
-              <h3 style="margin: 0 0 10px 0; color: #92400e;">📚 Topics Covered Today</h3>
+              <h3 style="margin: 0 0 10px 0; color: #92400e;">Topics Covered Today</h3>
               <ul style="margin: 0; padding-left: 20px;">
                 ${progress.topicsCovered.map((topic: string) => `<li>${topic}</li>`).join('')}
               </ul>
@@ -289,10 +289,10 @@ function generateLessonSummaryHTML({ student, lesson, progress, teacher }: {
 
           ${progress.homework && progress.homework.assigned ? `
             <div class="homework">
-              <h3 style="margin: 0 0 10px 0; color: #059669;">📝 Homework Assignment</h3>
+              <h3 style="margin: 0 0 10px 0; color: #059669;">Homework Assignment</h3>
               <p style="margin: 0; font-weight: 500;">${progress.homework.assigned}</p>
               ${progress.homework.completed ? `
-                <p style="margin: 10px 0 0 0; color: #059669; font-weight: 600;">✅ Previous homework completed</p>
+                                  <p style="margin: 10px 0 0 0; color: #059669; font-weight: 600;">Previous homework completed</p>
                 ${progress.homework.feedback ? `<p style="margin: 5px 0 0 0; font-style: italic;">"${progress.homework.feedback}"</p>` : ''}
               ` : ''}
             </div>
@@ -369,7 +369,7 @@ function generateWeeklyReportHTML({ student, teacher, weeklyLessons }: {
     <body>
       <div class="container">
         <div class="header">
-          <h1>📊 Weekly Progress Report</h1>
+          <h1>Weekly Progress Report</h1>
           <p style="margin: 10px 0 0 0; opacity: 0.9;">${student.name}</p>
         </div>
         
@@ -384,7 +384,7 @@ function generateWeeklyReportHTML({ student, teacher, weeklyLessons }: {
               <div style="font-size: 14px; color: #064e3b;">Avg Score</div>
             </div>
             <div class="stat-item">
-              <div style="font-size: 24px; font-weight: bold; color: #059669;">📈</div>
+              <div style="font-size: 24px; font-weight: bold; color: #059669;">↗</div>
               <div style="font-size: 14px; color: #064e3b;">Improving</div>
             </div>
           </div>
@@ -418,7 +418,7 @@ function generateWeeklyReportHTML({ student, teacher, weeklyLessons }: {
           </div>
 
           <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin: 0 0 10px 0; color: #92400e;">💡 Recommendations</h3>
+            <h3 style="margin: 0 0 10px 0; color: #92400e;">Recommendations</h3>
             <p style="margin: 0;">Continue the excellent progress! Focus on areas with lower scores for balanced improvement.</p>
           </div>
         </div>

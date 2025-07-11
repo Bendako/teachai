@@ -254,7 +254,7 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             onClick={() => onOpenAIPlanner(student._id, student.name, student.level)}
             className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 font-medium"
           >
-            🤖 AI Plan Lesson
+            AI Plan Lesson
           </Button>
           <Button 
             variant="outline" 
@@ -270,7 +270,7 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             onClick={() => onOpenEmail(student._id, student.name, student.parentInfo?.email)}
             className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 font-medium"
           >
-            📧 Send Email
+            Send Email
           </Button>
         </div>
       </div>
@@ -378,9 +378,9 @@ function AddStudentForm({ teacherId, onClose }: { teacherId: Id<"users">; onClos
                     onChange={(e) => setFormData({ ...formData, level: e.target.value as "beginner" | "intermediate" | "advanced" })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 bg-gray-50 focus:bg-white"
                   >
-                    <option value="beginner">🌱 Beginner</option>
-                    <option value="intermediate">🌿 Intermediate</option>
-                    <option value="advanced">🌳 Advanced</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
                   </select>
                 </div>
 

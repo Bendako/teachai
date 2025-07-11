@@ -106,21 +106,21 @@ export function AnalyticsDashboard({ teacherId, onClose }: AnalyticsDashboardPro
           title="Total Students"
           value={analytics.totalStudents.toString()}
           subtitle={`${analytics.activeStudents} active`}
-          icon="👥"
+                        icon="users"
           trend={analytics.activeStudents === analytics.totalStudents ? "stable" : "mixed"}
         />
         <MetricCard
           title="Lessons Completed"
           value={analytics.completedLessons.toString()}
           subtitle={`of ${analytics.totalLessons} total`}
-          icon="📚"
+                        icon="book"
           trend="positive"
         />
         <MetricCard
           title="Avg Speaking Score"
           value={analytics.avgSkillImprovement.speaking.toString()}
           subtitle="out of 10"
-          icon="🗣️"
+                        icon="microphone"
           trend={analytics.avgSkillImprovement.speaking >= 7 ? "positive" : 
                  analytics.avgSkillImprovement.speaking >= 5 ? "neutral" : "negative"}
         />
@@ -128,7 +128,7 @@ export function AnalyticsDashboard({ teacherId, onClose }: AnalyticsDashboardPro
           title="Top Topic"
           value={analytics.topTopics[0]?.topic || "No data"}
           subtitle={analytics.topTopics[0] ? `${analytics.topTopics[0].count} times` : ""}
-          icon="📝"
+                        icon="edit"
           trend="stable"
         />
       </div>
@@ -199,12 +199,12 @@ function MetricCard({ title, value, subtitle, icon, trend }: {
 
 function SkillsOverviewChart({ skills }: { skills: Record<string, number> }) {
   const skillLabels = {
-    reading: "📖 Reading",
-    writing: "✍️ Writing",
-    speaking: "🗣️ Speaking",
-    listening: "👂 Listening",
-    grammar: "📝 Grammar",
-    vocabulary: "📚 Vocabulary",
+    reading: "Reading",
+    writing: "Writing",
+    speaking: "Speaking",
+    listening: "Listening",
+    grammar: "Grammar",
+    vocabulary: "Vocabulary",
   };
 
   return (

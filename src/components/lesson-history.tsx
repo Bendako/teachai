@@ -222,12 +222,12 @@ function LessonCard({ lesson, isLatest }: LessonCardProps) {
 
 function SkillMiniBar({ skill, value }: { skill: string; value: number }) {
   const skillLabels = {
-    reading: "📖 Reading",
-    writing: "✍️ Writing", 
-    speaking: "🗣️ Speaking",
-    listening: "👂 Listening",
-    grammar: "📝 Grammar",
-    vocabulary: "📚 Vocabulary",
+    reading: "Reading",
+    writing: "Writing", 
+    speaking: "Speaking",
+    listening: "Listening",
+    grammar: "Grammar",
+    vocabulary: "Vocabulary",
   };
 
   const getScoreColor = (score: number) => {
@@ -283,12 +283,12 @@ function SkillsProgressChart({ lessons }: { lessons: LessonHistoryItem[] }) {
 
 function SkillProgressLine({ skill, lessons }: { skill: string; lessons: LessonHistoryItem[] }) {
   const skillLabels = {
-    reading: "📖 Reading",
-    writing: "✍️ Writing",
-    speaking: "🗣️ Speaking", 
-    listening: "👂 Listening",
-    grammar: "📝 Grammar",
-    vocabulary: "📚 Vocabulary",
+    reading: "Reading",
+    writing: "Writing",
+    speaking: "Speaking", 
+    listening: "Listening",
+    grammar: "Grammar",
+    vocabulary: "Vocabulary",
   };
 
   const values = lessons.map(lesson => lesson.skills?.[skill as keyof typeof lesson.skills] || 0);

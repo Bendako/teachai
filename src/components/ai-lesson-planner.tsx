@@ -209,11 +209,11 @@ export function AILessonPlanner({
   };
 
   const getFileIcon = (fileType: string) => {
-    if (fileType.includes('pdf')) return '📄';
-    if (fileType.includes('word') || fileType.includes('document')) return '📝';
-    if (fileType.includes('image')) return '🖼️';
-    if (fileType.includes('text')) return '📃';
-    return '📎';
+    if (fileType.includes('pdf')) return 'PDF';
+    if (fileType.includes('word') || fileType.includes('document')) return 'DOC';
+    if (fileType.includes('image')) return 'IMG';
+    if (fileType.includes('text')) return 'TXT';
+    return 'FILE';
   };
 
   const handleGeneratePlan = async () => {
@@ -299,7 +299,7 @@ export function AILessonPlanner({
       {/* Header */}
       <div className="flex justify-between items-center pb-4 border-b border-gray-200">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">🤖 AI Lesson Planner</h2>
+          <h2 className="text-2xl font-bold text-gray-900">AI Lesson Planner</h2>
           <p className="text-gray-600 mt-1">Generate a personalized lesson plan for {studentName}</p>
           <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
             studentLevel === 'beginner' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
@@ -336,10 +336,10 @@ export function AILessonPlanner({
                 onChange={(e) => setPlanParams(prev => ({ ...prev, lessonDuration: parseInt(e.target.value) }))}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-gray-900 bg-gray-50 focus:bg-white font-medium"
               >
-                <option value={30}>⏱️ 30 minutes - Quick session</option>
-                <option value={45}>🕐 45 minutes - Standard lesson</option>
-                <option value={60}>🕑 60 minutes - Full lesson</option>
-                <option value={90}>🕒 90 minutes - Extended session</option>
+                <option value={30}>30 minutes - Quick session</option>
+                <option value={45}>45 minutes - Standard lesson</option>
+                <option value={60}>60 minutes - Full lesson</option>
+                <option value={90}>90 minutes - Extended session</option>
               </select>
             </div>
           </div>
@@ -428,7 +428,7 @@ export function AILessonPlanner({
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">📎 Attach Reference Materials</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Attach Reference Materials</h3>
                 <p className="text-sm text-gray-600">Upload files to provide context for the AI lesson planner</p>
               </div>
             </div>
@@ -445,7 +445,11 @@ export function AILessonPlanner({
                 onDragLeave={handleDragLeave}
               >
                 <div className="space-y-4">
-                  <div className="text-5xl">📁</div>
+                  <div className="text-5xl">
+                    <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707L16.414 6.5a1 1 0 00-.707-.293H7a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                    </svg>
+                  </div>
                   <div>
                     <p className="text-xl font-semibold text-gray-800 mb-2">
                       Drop files here or 
@@ -461,7 +465,7 @@ export function AILessonPlanner({
                       </label>
                     </p>
                     <p className="text-sm text-gray-600 bg-white px-4 py-2 rounded-full inline-block border border-gray-200">
-                      📄 PDF • 📝 Word • 📃 Text • 🖼️ Images (max 10MB each)
+                      PDF • Word • Text • Images (max 10MB each)
                     </p>
                   </div>
                   {isUploading && (
@@ -571,7 +575,7 @@ export function AILessonPlanner({
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  🤖 Generate AI Lesson Plan
+                  Generate AI Lesson Plan
                 </div>
               )}
             </button>
@@ -582,7 +586,9 @@ export function AILessonPlanner({
         <div className="space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-center">
-              <span className="text-green-600 text-xl mr-2">✅</span>
+              <svg className="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
               <div>
                 <h3 className="font-semibold text-green-900">Lesson Plan Generated!</h3>
                 <p className="text-green-700 text-sm">Claude has created a personalized lesson plan based on {studentName}&apos;s progress</p>
@@ -688,7 +694,7 @@ export function AILessonPlanner({
                 onClick={handleCreateLesson}
                 className="bg-green-600 hover:bg-green-700"
               >
-                📅 Schedule This Lesson
+                Schedule This Lesson
               </Button>
             </div>
           </div>

@@ -81,14 +81,14 @@ export function EmailManagement({
 
       {/* Parent Email Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">📧 Parent Contact</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">Parent Contact</h3>
         {parentEmail ? (
           <p className="text-blue-800">
             <strong>Email:</strong> {parentEmail}
           </p>
         ) : (
           <p className="text-red-600">
-            ⚠️ No parent email address on file. Please update student information.
+                          Warning: No parent email address on file. Please update student information.
           </p>
         )}
       </div>
@@ -99,7 +99,7 @@ export function EmailManagement({
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <EmailTypeCard
-            title="📝 Lesson Summary"
+                            title="Lesson Summary"
             description="Automatic email sent after each completed lesson with skills assessment, topics covered, and homework."
             isSelected={emailType === "lesson"}
             onSelect={() => setEmailType("lesson")}
@@ -107,7 +107,7 @@ export function EmailManagement({
           />
           
           <EmailTypeCard
-            title="📊 Weekly Progress Report"
+                            title="Weekly Progress Report"
             description="Comprehensive weekly summary showing progress trends, completed lessons, and recommendations."
             isSelected={emailType === "weekly"}
             onSelect={() => setEmailType("weekly")}
@@ -162,7 +162,7 @@ export function EmailManagement({
         }`}>
           <div className="flex items-center">
             <span className="mr-2">
-              {emailResult.success ? "✅" : "❌"}
+                              {emailResult.success ? "Success" : "Failed"}
             </span>
             {emailResult.message}
           </div>

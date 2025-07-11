@@ -263,12 +263,12 @@ function SkillSlider({ skill, value, onChange }: {
   onChange: (value: number) => void; 
 }) {
   const skillLabels = {
-    reading: "📖 Reading",
-    writing: "✍️ Writing",
-    speaking: "🗣️ Speaking",
-    listening: "👂 Listening",
-    grammar: "📝 Grammar",
-    vocabulary: "📚 Vocabulary",
+    reading: "Reading",
+    writing: "Writing",
+    speaking: "Speaking",
+    listening: "Listening",
+    grammar: "Grammar",
+    vocabulary: "Vocabulary",
   };
 
   const getScoreColor = (score: number) => {
