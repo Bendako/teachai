@@ -5,8 +5,8 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 import { ProgressTracker } from "./progress-tracker";
-import { LessonHistory } from "./lesson-history";
 import { AILessonPlanner } from "./ai-lesson-planner";
+import { StudentProfile } from "./student-profile";
 import { useState } from "react";
 import { EmailManagement } from "./email-management";
 
@@ -25,6 +25,7 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   const [viewingHistory, setViewingHistory] = useState<{
     studentId: Id<"students">;
     studentName: string;
+    studentLevel: "beginner" | "intermediate" | "advanced";
   } | null>(null);
 
   const [emailModal, setEmailModal] = useState<{
@@ -81,8 +82,8 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               onStartLesson={(studentId, lessonId) => 
                 setActiveLessonData({ lessonId, studentId })
               }
-              onViewHistory={(studentId, studentName) =>
-                setViewingHistory({ studentId, studentName })
+              onViewHistory={(studentId, studentName, studentLevel) =>
+                setViewingHistory({ studentId, studentName, studentLevel })
               }
               onOpenEmail={(studentId, studentName, parentEmail) =>
                 setEmailModal({ studentId, studentName, parentEmail })
@@ -128,9 +129,11 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <LessonHistory
+              <StudentProfile
                 studentId={viewingHistory.studentId}
                 studentName={viewingHistory.studentName}
+                studentLevel="intermediate"
+                teacherId={teacherId}
                 onClose={() => setViewingHistory(null)}
               />
             </div>
@@ -187,7 +190,7 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
   student: Student; 
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
-  onViewHistory: (studentId: Id<"students">, studentName: string) => void;
+  onViewHistory: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
   onOpenEmail: (studentId: Id<"students">, studentName: string, parentEmail?: string) => void;
   onOpenAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
 }) {
@@ -259,7 +262,7 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => onViewHistory(student._id, student.name)}
+            onClick={() => onViewHistory(student._id, student.name, student.level)}
             className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-medium"
           >
             View Profile

@@ -85,7 +85,10 @@ export const getLessonsByStudent = query({
   returns: v.array(v.object({
     _id: v.id("lessons"),
     _creationTime: v.number(),
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
     title: v.string(),
+    description: v.optional(v.string()),
     scheduledAt: v.number(),
     duration: v.number(),
     status: v.union(
@@ -94,6 +97,17 @@ export const getLessonsByStudent = query({
       v.literal("completed"), 
       v.literal("cancelled")
     ),
+    lessonPlan: v.optional(v.object({
+      objectives: v.array(v.string()),
+      activities: v.array(v.string()),
+      materials: v.array(v.string()),
+      homework: v.optional(v.string()),
+    })),
+    isAiGenerated: v.optional(v.boolean()),
+    aiProvider: v.optional(v.union(v.literal("openai"), v.literal("claude"))),
+    generationId: v.optional(v.id("ai_generation_history")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
     return await ctx.db

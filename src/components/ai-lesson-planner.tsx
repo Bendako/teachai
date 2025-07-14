@@ -266,18 +266,27 @@ export function AILessonPlanner({
     if (!generatedPlan) return;
 
     try {
-      const lessonId = await createLessonFromAILessonPlan({
+      const result = await createLessonFromAILessonPlan({
         aiLessonPlanId: generatedPlan.lessonPlanId,
         scheduledAt: Date.now(),
         teacherId,
         studentId
       });
       
-      // Close the planner
-      onClose();
-      
-      // You could also navigate to the created lesson or show a success message
-      alert(`Lesson scheduled successfully! Lesson ID: ${lessonId}`);
+      if (result.success && result.lessonId) {
+        // Close the planner
+        onClose();
+        
+        // Show success message with proper lesson ID
+        alert(`✅ Lesson scheduled successfully! 
+📅 Lesson ID: ${result.lessonId}
+🎯 Title: ${generatedPlan.title}
+⏱️ Duration: ${generatedPlan.estimatedDuration} minutes
+
+The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
+      } else {
+        throw new Error(result.error || "Failed to create lesson");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create lesson");
     }
