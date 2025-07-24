@@ -314,7 +314,7 @@ function StudentComparisonTable({ students }: { students: StudentComparisonData[
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     student.level === 'beginner' ? 'bg-emerald-100 text-emerald-700' :
                     student.level === 'intermediate' ? 'bg-blue-100 text-blue-700' :
-                    'bg-purple-100 text-purple-700'
+                    'bg-[#F5F5FF] text-[#6366F1]'
                   }`}>
                     {student.level}
                   </span>
@@ -364,7 +364,7 @@ function TopicsChart({ topics }: { topics: Array<{ topic: string; count: number 
           </div>
           <div className="flex-1 bg-gray-100 rounded-full h-2">
             <div 
-              className="h-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full transition-all duration-500"
+              className="h-2 bg-gradient-to-r from-[#6366F1] to-[#5855EB] rounded-full transition-all duration-500"
               style={{ width: `${(topic.count / maxCount) * 100}%` }}
             />
           </div>

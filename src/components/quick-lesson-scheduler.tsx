@@ -79,7 +79,7 @@ export function QuickLessonScheduler({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-t-lg">
+        <div className="bg-gradient-to-r from-[#6366F1] to-[#5855EB] text-white p-6 rounded-t-lg">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">Schedule New Lesson</h3>
             <button
@@ -201,7 +201,7 @@ export function QuickLessonScheduler({
           <Button
             onClick={handleSchedule}
             disabled={!selectedStudentId || !lessonTitle.trim() || isScheduling}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+            className="bg-gradient-to-r from-[#6366F1] to-[#5855EB] hover:from-[#5855EB] hover:to-[#4F46E5]"
           >
             {isScheduling ? (
               <div className="flex items-center gap-2">

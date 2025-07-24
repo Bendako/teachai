@@ -313,7 +313,7 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
           <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
             studentLevel === 'beginner' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
             studentLevel === 'intermediate' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-            'bg-purple-50 text-purple-700 border border-purple-200'
+            'bg-[#F5F5FF] text-[#6366F1] border border-[#6366F1]'
           }`}>
             {studentLevel.charAt(0).toUpperCase() + studentLevel.slice(1)} Level
           </span>
@@ -431,8 +431,8 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
           {/* File Upload Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-[#F5F5FF] rounded-xl flex items-center justify-center">
+          <svg className="w-5 h-5 text-[#6366F1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
               </div>
@@ -446,8 +446,8 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
               <div
                 className={`border-3 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
                   isDragOver 
-                    ? 'border-purple-500 bg-purple-50 scale-105' 
-                    : 'border-gray-300 hover:border-purple-400 bg-gray-50 hover:bg-purple-25'
+                                ? 'border-[#6366F1] bg-[#F5F5FF] scale-105'
+            : 'border-gray-300 hover:border-[#6366F1] bg-gray-50 hover:bg-[#F5F5FF]'
                 }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
@@ -462,7 +462,7 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
                   <div>
                     <p className="text-xl font-semibold text-gray-800 mb-2">
                       Drop files here or 
-                      <label className="text-purple-600 hover:text-purple-700 cursor-pointer ml-1 underline underline-offset-2">
+                      <label className="text-[#6366F1] hover:text-[#5855EB] cursor-pointer ml-1 underline underline-offset-2">
                         browse
                         <input
                           type="file"
@@ -478,9 +478,9 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
                     </p>
                   </div>
                   {isUploading && (
-                    <div className="flex items-center justify-center space-x-3 bg-white px-6 py-3 rounded-xl border border-purple-200">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
-                      <span className="text-sm font-medium text-purple-700">Uploading files...</span>
+                              <div className="flex items-center justify-center space-x-3 bg-white px-6 py-3 rounded-xl border border-[#6366F1]">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#6366F1]"></div>
+            <span className="text-sm font-medium text-[#6366F1]">Uploading files...</span>
                     </div>
                   )}
                 </div>
@@ -499,7 +499,7 @@ The lesson is now saved in ${studentName}'s profile and ready to be taught!`);
                     {uploadedFiles.map((file) => (
                       <div key={file.id} className="flex items-center justify-between p-4 bg-white border-2 border-gray-200 rounded-xl hover:shadow-md transition-all duration-200">
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center text-2xl">
+                          <div className="w-12 h-12 bg-gradient-to-br from-[#F5F5FF] to-[#E0E7FF] rounded-xl flex items-center justify-center text-2xl">
                             {getFileIcon(file.type)}
                           </div>
                           <div>

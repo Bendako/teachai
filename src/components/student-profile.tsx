@@ -188,14 +188,14 @@ function OverviewTab({ student, aiPlansCount, upcomingLessons }: {
     <div className="space-y-6">
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+        <div className="bg-[#F5F5FF] border border-[#6366F1] rounded-lg p-4">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#6366F1] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">🤖</span>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-purple-900">AI Lesson Plans</p>
-              <p className="text-2xl font-bold text-purple-600">{aiPlansCount}</p>
+              <p className="text-sm font-medium text-[#1F2937]">AI Lesson Plans</p>
+              <p className="text-2xl font-bold text-[#6366F1]">{aiPlansCount}</p>
             </div>
           </div>
         </div>
@@ -245,7 +245,7 @@ function OverviewTab({ student, aiPlansCount, upcomingLessons }: {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 gap-3">
           <Button 
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-[#6366F1] hover:bg-[#5855EB] text-white"
             onClick={() => {/* This would open AI lesson planner */}}
           >
             🤖 Generate New Lesson Plan
@@ -271,12 +271,12 @@ function AIPlansTab({ aiLessonPlans, studentName }: {
   if (aiLessonPlans.length === 0) {
     return (
       <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-        <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-[#F5F5FF] rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🤖</span>
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">No AI lesson plans yet</h3>
         <p className="text-gray-600 mb-6">Create personalized lesson plans using AI for {studentName}</p>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+        <Button className="bg-[#6366F1] hover:bg-[#5855EB] text-white">
           Generate First AI Lesson Plan
         </Button>
       </div>
@@ -289,7 +289,7 @@ function AIPlansTab({ aiLessonPlans, studentName }: {
         <h3 className="text-lg font-semibold text-gray-900">
           AI-Generated Lesson Plans ({aiLessonPlans.length})
         </h3>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white text-sm">
+        <Button className="bg-[#6366F1] hover:bg-[#5855EB] text-white text-sm">
           + Generate New Plan
         </Button>
       </div>
@@ -323,13 +323,13 @@ function AILessonPlanCard({ plan }: { plan: AILessonPlan }) {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h4 className="text-lg font-semibold text-gray-900">{plan.title}</h4>
-            <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+            <span className="px-2 py-1 bg-[#F5F5FF] text-[#6366F1] text-xs font-medium rounded-full">
               AI Generated
             </span>
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
               plan.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
               plan.difficulty === 'intermediate' ? 'bg-blue-100 text-blue-700' :
-              'bg-purple-100 text-purple-700'
+              'bg-[#F5F5FF] text-[#6366F1]'
             }`}>
               {plan.difficulty}
             </span>
