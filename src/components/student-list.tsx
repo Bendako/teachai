@@ -6,6 +6,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 import { ProgressTracker } from "./progress-tracker";
 import { AILessonPlanner } from "./ai-lesson-planner";
+import { EnhancedAIPlanner } from "./enhanced-ai-planner";
 import { StudentProfile } from "./student-profile";
 import { useState } from "react";
 import { EmailManagement } from "./email-management";
@@ -35,6 +36,12 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   } | null>(null);
 
   const [aiPlannerModal, setAiPlannerModal] = useState<{
+    studentId: Id<"students">;
+    studentName: string;
+    studentLevel: "beginner" | "intermediate" | "advanced";
+  } | null>(null);
+
+  const [enhancedAiPlannerModal, setEnhancedAiPlannerModal] = useState<{
     studentId: Id<"students">;
     studentName: string;
     studentLevel: "beginner" | "intermediate" | "advanced";
@@ -117,6 +124,9 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               }
               onOpenAIPlanner={(studentId, studentName, studentLevel) =>
                 setAiPlannerModal({ studentId, studentName, studentLevel })
+              }
+              onOpenEnhancedAIPlanner={(studentId, studentName, studentLevel) =>
+                setEnhancedAiPlannerModal({ studentId, studentName, studentLevel })
               }
             />
           ))}
@@ -253,6 +263,36 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </div>
         </div>
       )}
+
+      {enhancedAiPlannerModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Enhanced AI Lesson Planner</h2>
+                <p className="text-gray-600 text-sm">Create lessons based on previous lesson context</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setEnhancedAiPlannerModal(null)}
+                className="rounded-xl border-gray-200 hover:bg-gray-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </Button>
+            </div>
+            <div className="p-6">
+              <EnhancedAIPlanner
+                studentId={enhancedAiPlannerModal.studentId}
+                studentName={enhancedAiPlannerModal.studentName}
+                teacherId={teacherId}
+                onClose={() => setEnhancedAiPlannerModal(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -271,13 +311,14 @@ type Student = {
   };
 };
 
-function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail, onOpenAIPlanner }: { 
+function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail, onOpenAIPlanner, onOpenEnhancedAIPlanner }: { 
   student: Student; 
   teacherId: Id<"users">;
   onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
   onViewHistory: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
   onOpenEmail: (studentId: Id<"students">, studentName: string, parentEmail?: string) => void;
   onOpenAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
+  onOpenEnhancedAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
 }) {
   const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
   const [isStartingLesson, setIsStartingLesson] = useState(false);
@@ -383,7 +424,7 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
             )}
           </Button>
           
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button 
               variant="outline" 
               size="sm"
@@ -394,6 +435,17 @@ function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenE
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
               AI Plan
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onOpenEnhancedAIPlanner(student._id, student.name, student.level)}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 font-medium rounded-lg py-2 transition-all duration-200"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Enhanced
             </Button>
             <Button 
               variant="outline" 

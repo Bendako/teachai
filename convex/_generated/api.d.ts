@@ -18,6 +18,7 @@ import type * as aiLessonPlans from "../aiLessonPlans.js";
 import type * as aiService from "../aiService.js";
 import type * as analytics from "../analytics.js";
 import type * as emails from "../emails.js";
+import type * as enhancedLessonGeneration from "../enhancedLessonGeneration.js";
 import type * as files from "../files.js";
 import type * as lessonGeneration from "../lessonGeneration.js";
 import type * as lessons from "../lessons.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   aiService: typeof aiService;
   analytics: typeof analytics;
   emails: typeof emails;
+  enhancedLessonGeneration: typeof enhancedLessonGeneration;
   files: typeof files;
   lessonGeneration: typeof lessonGeneration;
   lessons: typeof lessons;
