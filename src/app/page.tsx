@@ -7,6 +7,8 @@ import { StudentList } from "../components/student-list";
 import { AnalyticsDashboard } from "../components/analytics-dashboard";
 import { LessonCalendar } from "../components/lesson-calendar";
 import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
+
+import { Sidebar } from "../components/layout/sidebar";
 import { Button } from "../components/ui/button";
 import { useState, useEffect } from "react";
 
@@ -173,13 +175,12 @@ export default function Home() {
 function TeacherDashboard() {
   const { user, isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
+  const [activeSection, setActiveSection] = useState("dashboard");
   
   const currentUser = useQuery(api.users.getUserByClerkId, { 
     clerkId: user?.id || "" 
   });
   const createUser = useMutation(api.users.createUser);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [showScheduler, setShowScheduler] = useState(false);
@@ -226,69 +227,245 @@ function TeacherDashboard() {
     );
   }
 
-  return (
-    <div className="space-y-8">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Students" value="1" icon="users" />
-        <StatCard title="This Week&apos;s Lessons" value="3" icon="book" />
-        <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setShowCalendar(true)} />
-        <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setShowAnalytics(true)} />
-      </div>
+  const renderSection = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return (
+          <div className="space-y-4">
 
-      {/* Student Management */}
-      <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-        <StudentList teacherId={currentUser._id} />
-      </div>
 
-      {/* Calendar Modal */}
-      {showCalendar && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Lesson Calendar</h2>
-                <button
-                  onClick={() => setShowCalendar(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+            {/* Quick Stats */}
+            <div className="w-full">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Overview</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+                <StatCard title="Total Students" value="1" icon="users" />
+                <StatCard title="This Week's Lessons" value="3" icon="book" />
+                <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setActiveSection("calendar")} />
+                <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setActiveSection("analytics")} />
               </div>
-              <LessonCalendar
-                teacherId={currentUser._id}
-                onDateClick={(date) => {
-                  setSelectedDate(date);
-                  setShowScheduler(true);
-                }}
-                onCreateLesson={(date, time) => {
-                  setSelectedDate(date);
-                  setSelectedTime(time);
-                  setShowScheduler(true);
-                }}
-              />
+            </div>
+
+            {/* Student Management */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-4">
+                <StudentList teacherId={currentUser._id} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Analytics Modal */}
-      {showAnalytics && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <AnalyticsDashboard
-                teacherId={currentUser._id}
-                onClose={() => setShowAnalytics(false)}
-              />
+        );
+      
+      case "students":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Student Management</h2>
+                <p className="text-sm text-gray-600 mt-1">Manage your student profiles and information</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-4">
+                <StudentList teacherId={currentUser._id} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      
+      case "calendar":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Lesson Calendar</h2>
+                <p className="text-gray-600 mt-1">Schedule and manage your lessons</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-8">
+                <LessonCalendar
+                  teacherId={currentUser._id}
+                  onDateClick={(date) => {
+                    setSelectedDate(date);
+                    setShowScheduler(true);
+                  }}
+                  onCreateLesson={(date, time) => {
+                    setSelectedDate(date);
+                    setSelectedTime(time);
+                    setShowScheduler(true);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      
+      case "ai-planner":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">AI Lesson Planner</h2>
+                <p className="text-gray-600 mt-1">Generate personalized lesson plans using AI</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">AI Lesson Planner</h3>
+                <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto">Create personalized lesson plans tailored to each student&apos;s learning style and progress</p>
+                <Button className="bg-[#6366F1] hover:bg-[#5855EB] text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  Select a student to start planning
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case "enhanced-planner":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Enhanced AI Planner</h2>
+                <p className="text-gray-600 mt-1">Advanced lesson planning with enhanced AI capabilities</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Enhanced AI Planner</h3>
+                <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto">Advanced lesson planning with enhanced AI capabilities and detailed customization</p>
+                <Button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  Access enhanced features
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case "analytics":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h2>
+                <p className="text-gray-600 mt-1">Track student progress and performance insights</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-8">
+                <AnalyticsDashboard teacherId={currentUser._id} onClose={() => {}} />
+              </div>
+            </div>
+          </div>
+        );
+      
+      case "progress":
+        return (
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Progress Tracker</h2>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Progress Tracker</h3>
+              <p className="text-gray-600 mb-6">Monitor student progress and performance</p>
+              <Button className="bg-[#10B981] hover:bg-[#059669] text-white">
+                View progress reports
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case "lesson-history":
+        return (
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Lesson History</h2>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Lesson History</h3>
+              <p className="text-gray-600 mb-6">View past lessons and teaching records</p>
+              <Button className="bg-[#F59E0B] hover:bg-[#D97706] text-white">
+                Browse lesson history
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case "emails":
+        return (
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Management</h2>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8] rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Management</h3>
+              <p className="text-gray-600 mb-6">Manage communication with students and parents</p>
+              <Button className="bg-[#3B82F6] hover:bg-[#1D4ED8] text-white">
+                Manage emails
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case "scheduler":
+        return (
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Lesson Scheduler</h2>
+            <QuickLessonScheduler
+              teacherId={currentUser._id}
+              selectedDate={new Date()}
+              selectedTime="09:00"
+              isOpen={true}
+              onClose={() => {}}
+              onScheduled={() => {}}
+            />
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="text-center py-16">
+            <p className="text-gray-600">Select a feature from the sidebar</p>
+          </div>
+        );
+    }
+  };
 
-      {/* Quick Lesson Scheduler */}
+  return (
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar 
+        currentUser={currentUser}
+        onNavigate={setActiveSection}
+        activeSection={activeSection}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 w-full">
+          {renderSection()}
+        </div>
+      </div>
+
+      {/* Quick Lesson Scheduler Modal */}
       {showScheduler && selectedDate && (
         <QuickLessonScheduler
           teacherId={currentUser._id}
@@ -317,7 +494,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
   onClick?: () => void;
 }) {
   const getIcon = (iconName: string) => {
-    const iconProps = "w-6 h-6 text-[#6366F1]";
+    const iconProps = "w-5 h-5 text-[#6366F1]";
     switch (iconName) {
       case 'users':
         return (
@@ -350,18 +527,18 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
           </svg>
         );
       default:
-        return <div className="w-6 h-6 bg-gray-200 rounded"></div>;
+        return <div className="w-7 h-7 bg-gray-200 rounded"></div>;
     }
   };
 
   const cardContent = (
     <div className="flex items-center">
-      <div className="flex-shrink-0 w-12 h-12 bg-[#F5F5FF] rounded-lg flex items-center justify-center mr-4">
+      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#F5F5FF] to-[#E0E7FF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
         {getIcon(icon)}
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <p className="text-xs font-medium text-gray-600 truncate mb-1">{title}</p>
+        <p className="text-lg font-bold text-gray-900 truncate">{value}</p>
       </div>
     </div>
   );
@@ -370,7 +547,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
     return (
       <button
         onClick={onClick}
-        className="w-full bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] hover:bg-[#F5F5FF] transition-all duration-200 text-left cursor-pointer transform hover:scale-105"
+        className="w-full bg-white rounded-lg shadow-sm p-3 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] hover:bg-gradient-to-br hover:from-[#F5F5FF] hover:to-white transition-all duration-300 text-left cursor-pointer transform hover:scale-[1.02] group overflow-hidden"
       >
         {cardContent}
       </button>
@@ -378,7 +555,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] transition-all duration-200 transform hover:scale-105">
+    <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] transition-all duration-300 transform hover:scale-[1.02] group overflow-hidden">
       {cardContent}
     </div>
   );

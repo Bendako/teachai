@@ -21,7 +21,7 @@ export default function Header() {
           </SignedOut>
           <SignedIn>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Welcome back!</span>
+              
               <UserButton />
             </div>
           </SignedIn>
