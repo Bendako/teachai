@@ -273,12 +273,7 @@ function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Student Management */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4">
-                <StudentList teacherId={currentUser._id} />
-              </div>
-            </div>
+
           </div>
         );
       
