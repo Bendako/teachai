@@ -314,6 +314,7 @@ export const getPreviousLessonsForContext = action({
         averageScore: v.number(),
         areasForImprovement: v.array(v.string()),
         strengths: v.array(v.string()),
+        overallPerformance: v.string(),
       }),
     }))),
     error: v.optional(v.string()),

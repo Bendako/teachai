@@ -306,3 +306,46 @@ export const getLessonHistoryByStudent = query({
     return lessonHistory;
   },
 }); 
+
+// Get recent progress for dashboard
+export const getRecentProgress = query({
+  args: { teacherId: v.id("users") },
+  returns: v.array(v.object({
+    _id: v.id("progress"),
+    _creationTime: v.number(),
+    studentName: v.string(),
+    lessonTitle: v.string(),
+    skills: v.object({
+      reading: v.number(),
+      writing: v.number(),
+      speaking: v.number(),
+      listening: v.number(),
+      grammar: v.number(),
+      vocabulary: v.number(),
+    }),
+  })),
+  handler: async (ctx, args) => {
+    const progress = await ctx.db
+      .query("progress")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .order("desc")
+      .take(10);
+
+    // Get student and lesson names for each progress record
+    const progressWithNames = await Promise.all(
+      progress.map(async (prog) => {
+        const student = await ctx.db.get(prog.studentId);
+        const lesson = await ctx.db.get(prog.lessonId);
+        return {
+          _id: prog._id,
+          _creationTime: prog._creationTime,
+          studentName: student?.name || "Unknown Student",
+          lessonTitle: lesson?.title || "Unknown Lesson",
+          skills: prog.skills,
+        };
+      })
+    );
+
+    return progressWithNames;
+  },
+}); 

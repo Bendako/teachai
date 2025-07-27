@@ -421,3 +421,56 @@ export const checkSchedulingConflicts = query({
     }));
   },
 }); 
+
+// Get today's lessons for dashboard
+export const getTodaysLessons = query({
+  args: { teacherId: v.id("users") },
+  returns: v.array(v.object({
+    _id: v.id("lessons"),
+    _creationTime: v.number(),
+    teacherId: v.id("users"),
+    studentId: v.id("students"),
+    studentName: v.string(),
+    title: v.string(),
+    scheduledAt: v.number(),
+    duration: v.number(),
+    status: v.union(v.literal("planned"), v.literal("in_progress"), v.literal("completed"), v.literal("cancelled")),
+  })),
+  handler: async (ctx, args) => {
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).getTime();
+
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .filter((q) => 
+        q.and(
+          q.gte(q.field("scheduledAt"), startOfDay),
+          q.lte(q.field("scheduledAt"), endOfDay)
+        )
+      )
+      .order("asc")
+      .collect();
+
+    // Get student names for each lesson
+    const lessonsWithStudentNames = await Promise.all(
+      lessons.map(async (lesson) => {
+        const student = await ctx.db.get(lesson.studentId);
+        return {
+          _id: lesson._id,
+          _creationTime: lesson._creationTime,
+          teacherId: lesson.teacherId,
+          studentId: lesson.studentId,
+          studentName: student?.name || "Unknown Student",
+          title: lesson.title,
+          scheduledAt: lesson.scheduledAt,
+          duration: lesson.duration,
+          status: lesson.status,
+        };
+      })
+    );
+
+    return lessonsWithStudentNames;
+  },
+}); 

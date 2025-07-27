@@ -287,3 +287,69 @@ export const getStudentComparison = query({
     return comparisons.sort((a, b) => b.totalLessons - a.totalLessons);
   },
 }); 
+
+// Get performance insights for dashboard
+export const getPerformanceInsights = query({
+  args: { teacherId: v.id("users") },
+  returns: v.object({
+    studentsNeedingAttention: v.array(v.string()),
+    upcomingAssessments: v.array(v.string()),
+    homeworkCompletionRate: v.optional(v.number()),
+  }),
+  handler: async (ctx, args) => {
+    // Get all students for this teacher
+    const students = await ctx.db
+      .query("students")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .collect();
+
+    // Get recent progress for analysis
+    const recentProgress = await ctx.db
+      .query("progress")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .order("desc")
+      .take(50);
+
+    // Analyze students needing attention (simplified logic)
+    const studentsNeedingAttention: string[] = [];
+    for (const student of students) {
+      const studentProgress = recentProgress.filter(p => p.studentId === student._id);
+      if (studentProgress.length > 0) {
+        const latestProgress = studentProgress[0];
+        const avgScore = Object.values(latestProgress.skills).reduce((a, b) => a + b, 0) / 6;
+        if (avgScore < 6) {
+          studentsNeedingAttention.push(student.name);
+        }
+      }
+    }
+
+    // Get upcoming lessons (simplified as assessments)
+    const today = new Date();
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const upcomingLessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
+      .filter((q) => 
+        q.and(
+          q.gte(q.field("scheduledAt"), today.getTime()),
+          q.lte(q.field("scheduledAt"), nextWeek.getTime())
+        )
+      )
+      .collect();
+
+    const upcomingAssessments = upcomingLessons.map(lesson => lesson.title);
+
+    // Calculate homework completion rate (simplified)
+    const homeworkProgress = recentProgress.filter(p => p.homework);
+    const completedHomework = homeworkProgress.filter(p => p.homework?.completed);
+    const homeworkCompletionRate = homeworkProgress.length > 0 
+      ? Math.round((completedHomework.length / homeworkProgress.length) * 100)
+      : undefined;
+
+    return {
+      studentsNeedingAttention,
+      upcomingAssessments,
+      homeworkCompletionRate,
+    };
+  },
+}); 
