@@ -24,8 +24,10 @@ import type * as lessonGeneration from "../lessonGeneration.js";
 import type * as lessons from "../lessons.js";
 import type * as progress from "../progress.js";
 import type * as progressAnalysis from "../progressAnalysis.js";
+import type * as seedData from "../seedData.js";
 import type * as students from "../students.js";
 import type * as test from "../test.js";
+import type * as testSetup from "../testSetup.js";
 import type * as users from "../users.js";
 
 /**
@@ -48,8 +50,10 @@ declare const fullApi: ApiFromModules<{
   lessons: typeof lessons;
   progress: typeof progress;
   progressAnalysis: typeof progressAnalysis;
+  seedData: typeof seedData;
   students: typeof students;
   test: typeof test;
+  testSetup: typeof testSetup;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

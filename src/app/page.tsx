@@ -8,6 +8,7 @@ import { AnalyticsDashboard } from "../components/analytics-dashboard";
 import { LessonCalendar } from "../components/lesson-calendar";
 import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
 
+
 import { Sidebar } from "../components/layout/sidebar";
 import { Button } from "../components/ui/button";
 import { useState, useEffect } from "react";
@@ -181,6 +182,7 @@ function TeacherDashboard() {
     clerkId: user?.id || "" 
   });
   const createUser = useMutation(api.users.createUser);
+  const seedSampleData = useMutation(api.seedData.seedSampleData);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [showScheduler, setShowScheduler] = useState(false);
@@ -242,6 +244,32 @@ function TeacherDashboard() {
                 <StatCard title="This Week's Lessons" value="3" icon="book" />
                 <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setActiveSection("calendar")} />
                 <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setActiveSection("analytics")} />
+              </div>
+              
+              {/* Sample Data Button */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-blue-900">Demo Mode</h3>
+                    <p className="text-xs text-blue-700 mt-1">Add sample students and lessons to see the system in action</p>
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      if (currentUser) {
+                        const result = await seedSampleData({ teacherId: currentUser._id });
+                        if (result.success) {
+                          alert(result.message);
+                          window.location.reload();
+                        } else {
+                          alert("Failed to create sample data: " + result.message);
+                        }
+                      }
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2"
+                  >
+                    Add Sample Data
+                  </Button>
+                </div>
               </div>
             </div>
 
