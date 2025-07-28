@@ -36,14 +36,14 @@ export const testCurrentSetup = query({
     const convexWorking = true; // If this function runs, Convex is working
 
     // Test environment variables
-    const hasClaudeKey = process.env.ANTHROPIC_API_KEY && 
-                        process.env.ANTHROPIC_API_KEY !== "sk-ant-api03-xmNH4e8xjDj78O1sw2GgDSgJ-q6AXzup0pAlhDLTh-sVbv71mzbKTod_6pw8_lxHs4o8fp8atOJ7k";
+    const hasClaudeKey = !!(process.env.ANTHROPIC_API_KEY && 
+                        process.env.ANTHROPIC_API_KEY !== "sk-ant-api03-xmNH4e8xjDj78O1sw2GgDSgJ-q6AXzup0pAlhDLTh-sVbv71mzbKTod_6pw8_lxHs4o8fp8atOJ7k");
     
-    const hasOpenAIKey = process.env.OPENAI_API_KEY && 
-                        process.env.OPENAI_API_KEY !== "sk-your_openai_api_key_here";
+    const hasOpenAIKey = !!(process.env.OPENAI_API_KEY && 
+                        process.env.OPENAI_API_KEY !== "sk-your_openai_api_key_here");
     
-    const hasResendKey = process.env.RESEND_API_KEY && 
-                        process.env.RESEND_API_KEY.startsWith("re_");
+    const hasResendKey = !!(process.env.RESEND_API_KEY && 
+                        process.env.RESEND_API_KEY.startsWith("re_"));
 
     // Check Clerk configuration
     const hasClerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
@@ -78,7 +78,7 @@ export const testCurrentSetup = query({
         message: "Convex database is connected and working",
       },
       clerk: {
-        configured: hasClerkPubKey && hasClerkSecretKey,
+        configured: !!(hasClerkPubKey && hasClerkSecretKey),
         message: hasClerkPubKey && hasClerkSecretKey 
           ? "Clerk authentication is configured" 
           : "Clerk keys need to be configured",

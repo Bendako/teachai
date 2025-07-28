@@ -32,6 +32,7 @@ interface PreviousLesson {
     averageScore: number;
     areasForImprovement: string[];
     strengths: string[];
+    overallPerformance: string;
   };
 }
 
@@ -91,7 +92,7 @@ export function EnhancedAIPlanner({
     additionalContext: ""
   });
 
-  const generateLessonFromPrevious = useAction(api.enhancedLessonGeneration.generateLessonFromPreviousContext);
+  const generateLessonFromPrevious = useAction(api.generateLessonFromPreviousContext.generateLessonFromPreviousContext);
   const createLesson = useMutation(api.lessons.createLesson);
 
   const skillOptions = [
@@ -440,7 +441,7 @@ function PreviousLessonSelector({
 }) {
   const [previousLessons, setPreviousLessons] = useState<PreviousLesson[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const getPreviousLessons = useAction(api.enhancedLessonGeneration.getPreviousLessonsForContext);
+  const getPreviousLessons = useAction(api.getPreviousLessonsForContext.getPreviousLessonsForContext);
 
   useEffect(() => {
     const loadPreviousLessons = async () => {
