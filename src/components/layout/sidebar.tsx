@@ -71,12 +71,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
       icon: "mail",
       description: "Communication tools"
     },
-    {
-      id: "google-calendar",
-      label: "Google Calendar",
-      icon: "calendar-sync",
-      description: "Sync with Google Calendar"
-    },
+
     {
       id: "scheduler",
       label: "Quick Scheduler",
