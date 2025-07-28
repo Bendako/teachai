@@ -20,6 +20,7 @@ import type * as analytics from "../analytics.js";
 import type * as emails from "../emails.js";
 import type * as enhancedLessonGeneration from "../enhancedLessonGeneration.js";
 import type * as files from "../files.js";
+import type * as googleCalendar from "../googleCalendar.js";
 import type * as lessonGeneration from "../lessonGeneration.js";
 import type * as lessons from "../lessons.js";
 import type * as progress from "../progress.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   enhancedLessonGeneration: typeof enhancedLessonGeneration;
   files: typeof files;
+  googleCalendar: typeof googleCalendar;
   lessonGeneration: typeof lessonGeneration;
   lessons: typeof lessons;
   progress: typeof progress;

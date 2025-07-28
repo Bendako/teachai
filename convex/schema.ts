@@ -233,4 +233,91 @@ export default defineSchema({
     .index("by_student_and_type", ["studentId", "analysisType"])
     .index("by_teacher_and_created", ["teacherId", "createdAt"])
     .index("by_valid_until", ["validUntil"]),
+
+  // Google Calendar integration
+  google_calendar_connections: defineTable({
+    teacherId: v.id("users"),
+    accessToken: v.string(),
+    refreshToken: v.string(),
+    tokenExpiry: v.number(), // Unix timestamp
+    calendarId: v.optional(v.string()), // Primary calendar ID
+    isActive: v.boolean(),
+    lastSyncAt: v.optional(v.number()),
+    syncSettings: v.optional(v.object({
+      syncDirection: v.union(v.literal("one_way"), v.literal("two_way")),
+      syncLessons: v.boolean(),
+      syncAvailability: v.boolean(),
+      autoSync: v.boolean(),
+      syncInterval: v.number(), // Minutes
+    })),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_teacher", ["teacherId"])
+    .index("by_active", ["isActive"])
+    .index("by_last_sync", ["lastSyncAt"]),
+
+  // Google Calendar events synced from external calendar
+  google_calendar_events: defineTable({
+    teacherId: v.id("users"),
+    googleEventId: v.string(), // Google Calendar event ID
+    calendarId: v.string(), // Google Calendar ID
+    title: v.string(),
+    description: v.optional(v.string()),
+    startTime: v.number(), // Unix timestamp
+    endTime: v.number(), // Unix timestamp
+    location: v.optional(v.string()),
+    attendees: v.optional(v.array(v.object({
+      email: v.string(),
+      name: v.optional(v.string()),
+      responseStatus: v.optional(v.union(
+        v.literal("needsAction"),
+        v.literal("declined"),
+        v.literal("tentative"),
+        v.literal("accepted")
+      )),
+    }))),
+    isRecurring: v.boolean(),
+    recurringPattern: v.optional(v.string()),
+    status: v.union(
+      v.literal("confirmed"),
+      v.literal("tentative"),
+      v.literal("cancelled")
+    ),
+    lessonId: v.optional(v.id("lessons")), // Link to internal lesson if applicable
+    lastSyncedAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_teacher", ["teacherId"])
+    .index("by_google_event_id", ["googleEventId"])
+    .index("by_calendar_id", ["calendarId"])
+    .index("by_start_time", ["startTime"])
+    .index("by_lesson_id", ["lessonId"])
+    .index("by_teacher_and_time_range", ["teacherId", "startTime", "endTime"]),
+
+  // Calendar sync history for debugging and monitoring
+  calendar_sync_history: defineTable({
+    teacherId: v.id("users"),
+    syncType: v.union(
+      v.literal("initial_sync"),
+      v.literal("incremental_sync"),
+      v.literal("manual_sync"),
+      v.literal("error_sync")
+    ),
+    direction: v.union(v.literal("import"), v.literal("export"), v.literal("both")),
+    eventsProcessed: v.number(),
+    eventsCreated: v.number(),
+    eventsUpdated: v.number(),
+    eventsDeleted: v.number(),
+    errors: v.optional(v.array(v.string())),
+    syncDuration: v.number(), // Milliseconds
+    status: v.union(v.literal("success"), v.literal("partial"), v.literal("failed")),
+    startedAt: v.number(),
+    completedAt: v.number(),
+  })
+    .index("by_teacher", ["teacherId"])
+    .index("by_sync_type", ["syncType"])
+    .index("by_status", ["status"])
+    .index("by_started_at", ["startedAt"]),
 });

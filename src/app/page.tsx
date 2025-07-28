@@ -9,6 +9,7 @@ import { LessonCalendar } from "../components/lesson-calendar";
 import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
 import { TodaysSchedule, RecentActivity, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
 import { LandingPage } from "../components/landing-page";
+import { GoogleCalendarIntegration } from "../components/google-calendar-integration";
 
 
 import { Sidebar } from "../components/layout/sidebar";
@@ -334,6 +335,19 @@ function TeacherDashboard() {
                 Manage emails
               </Button>
             </div>
+          </div>
+        );
+      
+      case "google-calendar":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Google Calendar Integration</h2>
+                <p className="text-gray-600 mt-1">Connect and sync with your Google Calendar</p>
+              </div>
+            </div>
+            <GoogleCalendarIntegration teacherId={currentUser._id} />
           </div>
         );
       
