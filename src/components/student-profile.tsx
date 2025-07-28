@@ -13,6 +13,10 @@ interface StudentProfileProps {
   studentLevel: "beginner" | "intermediate" | "advanced";
   teacherId: Id<"users">;
   onClose: () => void;
+  onOpenAIPlanner?: () => void;
+  onOpenEnhancedAIPlanner?: () => void;
+  onOpenEmail?: () => void;
+  onStartLesson?: () => void;
 }
 
 type AILessonPlan = {
@@ -72,7 +76,7 @@ type Student = {
 
 
 
-export function StudentProfile({ studentId, studentName, studentLevel, teacherId, onClose }: StudentProfileProps) {
+export function StudentProfile({ studentId, studentName, studentLevel, teacherId, onClose, onOpenAIPlanner, onOpenEnhancedAIPlanner, onOpenEmail, onStartLesson }: StudentProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   
   // Get student's AI lesson plans
@@ -155,6 +159,10 @@ export function StudentProfile({ studentId, studentName, studentLevel, teacherId
             student={student} 
             aiPlansCount={aiPlansCount}
             upcomingLessons={upcomingLessons}
+            onOpenAIPlanner={onOpenAIPlanner}
+            onOpenEnhancedAIPlanner={onOpenEnhancedAIPlanner}
+            onOpenEmail={onOpenEmail}
+            onStartLesson={onStartLesson}
           />
         )}
         
@@ -179,10 +187,14 @@ export function StudentProfile({ studentId, studentName, studentLevel, teacherId
 }
 
 // Overview Tab Component
-function OverviewTab({ student, aiPlansCount, upcomingLessons }: {
+function OverviewTab({ student, aiPlansCount, upcomingLessons, onOpenAIPlanner, onOpenEnhancedAIPlanner, onOpenEmail, onStartLesson }: {
   student: Student;
   aiPlansCount: number;
   upcomingLessons: ScheduledLesson[];
+  onOpenAIPlanner?: () => void;
+  onOpenEnhancedAIPlanner?: () => void;
+  onOpenEmail?: () => void;
+  onStartLesson?: () => void;
 }) {
   return (
     <div className="space-y-6">
@@ -243,20 +255,41 @@ function OverviewTab({ student, aiPlansCount, upcomingLessons }: {
       {/* Quick Actions */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Button 
-            className="bg-[#6366F1] hover:bg-[#5855EB] text-white"
-            onClick={() => {/* This would open AI lesson planner */}}
-          >
-            🤖 Generate New Lesson Plan
-          </Button>
-          <Button 
-            variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-50"
-            onClick={() => {/* This would schedule a lesson */}}
-          >
-            📅 Schedule Lesson
-          </Button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {onStartLesson && (
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={onStartLesson}
+            >
+              🎯 Start Lesson
+            </Button>
+          )}
+          {onOpenAIPlanner && (
+            <Button 
+              className="bg-[#6366F1] hover:bg-[#5855EB] text-white"
+              onClick={onOpenAIPlanner}
+            >
+              🤖 AI Plan
+            </Button>
+          )}
+          {onOpenEnhancedAIPlanner && (
+            <Button 
+              variant="outline"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              onClick={onOpenEnhancedAIPlanner}
+            >
+              ⚡ Enhanced
+            </Button>
+          )}
+          {onOpenEmail && (
+            <Button 
+              variant="outline"
+              className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              onClick={onOpenEmail}
+            >
+              📧 Email
+            </Button>
+          )}
         </div>
       </div>
     </div>

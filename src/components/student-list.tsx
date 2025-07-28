@@ -17,6 +17,8 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
     activeOnly: true 
   });
   
+  const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeLessonData, setActiveLessonData] = useState<{
     lessonId: Id<"lessons">;
@@ -107,26 +109,13 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {students.map((student: Student) => (
             <StudentCard 
               key={student._id} 
               student={student}
-              teacherId={teacherId}
-              onStartLesson={(studentId, lessonId) => 
-                setActiveLessonData({ lessonId, studentId })
-              }
               onViewHistory={(studentId, studentName, studentLevel) =>
                 setViewingHistory({ studentId, studentName, studentLevel })
-              }
-              onOpenEmail={(studentId, studentName, parentEmail) =>
-                setEmailModal({ studentId, studentName, parentEmail })
-              }
-              onOpenAIPlanner={(studentId, studentName, studentLevel) =>
-                setAiPlannerModal({ studentId, studentName, studentLevel })
-              }
-              onOpenEnhancedAIPlanner={(studentId, studentName, studentLevel) =>
-                setEnhancedAiPlannerModal({ studentId, studentName, studentLevel })
               }
             />
           ))}
@@ -193,9 +182,39 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               <StudentProfile
                 studentId={viewingHistory.studentId}
                 studentName={viewingHistory.studentName}
-                studentLevel="intermediate"
+                studentLevel={viewingHistory.studentLevel}
                 teacherId={teacherId}
                 onClose={() => setViewingHistory(null)}
+                onStartLesson={async () => {
+                  try {
+                    const lessonId = await getOrCreateLesson({
+                      teacherId,
+                      studentId: viewingHistory.studentId,
+                      title: `Lesson with ${viewingHistory.studentName}`,
+                      description: `English lesson session`,
+                      duration: 60, // 60 minutes default
+                    });
+                    setActiveLessonData({ lessonId, studentId: viewingHistory.studentId });
+                    setViewingHistory(null); // Close the profile modal
+                  } catch (error) {
+                    console.error("Failed to start lesson:", error);
+                  }
+                }}
+                onOpenAIPlanner={() => setAiPlannerModal({ 
+                  studentId: viewingHistory.studentId, 
+                  studentName: viewingHistory.studentName, 
+                  studentLevel: viewingHistory.studentLevel 
+                })}
+                onOpenEnhancedAIPlanner={() => setEnhancedAiPlannerModal({ 
+                  studentId: viewingHistory.studentId, 
+                  studentName: viewingHistory.studentName, 
+                  studentLevel: viewingHistory.studentLevel 
+                })}
+                onOpenEmail={() => setEmailModal({ 
+                  studentId: viewingHistory.studentId, 
+                  studentName: viewingHistory.studentName, 
+                  parentEmail: undefined 
+                })}
               />
             </div>
           </div>
@@ -311,166 +330,89 @@ type Student = {
   };
 };
 
-function StudentCard({ student, teacherId, onStartLesson, onViewHistory, onOpenEmail, onOpenAIPlanner, onOpenEnhancedAIPlanner }: { 
+function StudentCard({ student, onViewHistory }: { 
   student: Student; 
-  teacherId: Id<"users">;
-  onStartLesson: (studentId: Id<"students">, lessonId: Id<"lessons">) => void;
   onViewHistory: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
-  onOpenEmail: (studentId: Id<"students">, studentName: string, parentEmail?: string) => void;
-  onOpenAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
-  onOpenEnhancedAIPlanner: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
 }) {
-  const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
-  const [isStartingLesson, setIsStartingLesson] = useState(false);
-
-  const handleStartLesson = async () => {
-    setIsStartingLesson(true);
-    try {
-      const lessonId = await getOrCreateLesson({
-        teacherId,
-        studentId: student._id,
-        title: `Lesson with ${student.name}`,
-        description: `English lesson session`,
-        duration: 60, // 60 minutes default
-      });
-      onStartLesson(student._id, lessonId);
-    } catch (error) {
-      console.error("Failed to start lesson:", error);
-    } finally {
-      setIsStartingLesson(false);
-    }
-  };
-
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'beginner':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-500';
       case 'intermediate':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-500';
       case 'advanced':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-500';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-gray-500';
+    }
+  };
+
+  const getLevelTextColor = (level: string) => {
+    switch (level) {
+      case 'beginner':
+        return 'text-emerald-700';
+      case 'intermediate':
+        return 'text-blue-700';
+      case 'advanced':
+        return 'text-purple-700';
+      default:
+        return 'text-gray-700';
+    }
+  };
+
+  const getLevelBgColor = (level: string) => {
+    switch (level) {
+      case 'beginner':
+        return 'bg-emerald-50';
+      case 'intermediate':
+        return 'bg-blue-50';
+      case 'advanced':
+        return 'bg-purple-50';
+      default:
+        return 'bg-gray-50';
     }
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden">
+    <div 
+      onClick={() => onViewHistory(student._id, student.name, student.level)}
+      className="group relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-200 cursor-pointer overflow-hidden"
+    >
       {/* Gradient accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+      <div className={`absolute top-0 left-0 right-0 h-1 ${getLevelColor(student.level)}`}></div>
       
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+      <div className="p-4">
+        {/* Student Info */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors duration-200 truncate mb-2">
               {student.name}
             </h3>
-            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getLevelColor(student.level)}`}>
-              <div className={`w-2 h-2 rounded-full mr-2 ${
-                student.level === 'beginner' ? 'bg-emerald-500' :
-                student.level === 'intermediate' ? 'bg-blue-500' :
-                'bg-purple-500'
-              }`}></div>
+            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getLevelBgColor(student.level)} ${getLevelTextColor(student.level)} mb-3`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${getLevelColor(student.level)}`}></div>
               {student.level.charAt(0).toUpperCase() + student.level.slice(1)}
             </div>
-          </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
-            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-        </div>
 
-        {/* Student Info */}
-        <div className="space-y-3 mb-6">
-          {student.email && (
-            <div className="flex items-center text-sm text-gray-600">
-              <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              {student.email}
-            </div>
-          )}
-          {student.goals.length > 0 && (
-            <div className="flex items-start text-sm text-gray-600">
-              <svg className="w-4 h-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="line-clamp-2">{student.goals.join(", ")}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button 
-            onClick={handleStartLesson}
-            disabled={isStartingLesson}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            {isStartingLesson ? (
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Starting...
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* Student Goals Preview */}
+            {student.goals.length > 0 && (
+              <div className="flex items-start">
+                <svg className="w-3 h-3 text-gray-400 mt-0.5 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Start Lesson
+                <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                  {student.goals.slice(0, 2).join(", ")}
+                  {student.goals.length > 2 && "..."}
+                </p>
               </div>
             )}
-          </Button>
-          
-          <div className="grid grid-cols-3 gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onOpenAIPlanner(student._id, student.name, student.level)}
-              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 font-medium rounded-lg py-2 transition-all duration-200"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              AI Plan
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onOpenEnhancedAIPlanner(student._id, student.name, student.level)}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 font-medium rounded-lg py-2 transition-all duration-200"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Enhanced
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onViewHistory(student._id, student.name, student.level)}
-              className="border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 font-medium rounded-lg py-2 transition-all duration-200"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              Profile
-            </Button>
           </div>
           
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => onOpenEmail(student._id, student.name, student.parentInfo?.email)}
-            className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 font-medium rounded-lg py-2 transition-all duration-200"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          {/* Arrow indicator */}
+          <div className="text-gray-300 group-hover:text-gray-400 transition-colors duration-200 ml-3">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            Send Email
-          </Button>
+          </div>
         </div>
       </div>
     </div>
