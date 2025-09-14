@@ -22,25 +22,7 @@ export default function Header() {
             </h1>
           </Link>
           
-          {/* Desktop Navigation */}
-          <SignedIn>
-            <nav className="hidden md:flex items-center space-x-1">
-              {[
-                { href: "#dashboard", label: "Dashboard" },
-                { href: "#students", label: "Students" },
-                { href: "#calendar", label: "Calendar" },
-                { href: "#analytics", label: "Analytics" }
-              ].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-          </SignedIn>
+          {/* Desktop Navigation - Removed redundant links as they're available in sidebar */}
           
           <SignedOut>
             <nav className="hidden md:flex items-center space-x-1">
@@ -114,21 +96,7 @@ export default function Header() {
           <div className="md:hidden">
             <div className="space-y-1 pb-3 pt-2">
               <SignedIn>
-                {[
-                  { href: "#dashboard", label: "Dashboard" },
-                  { href: "#students", label: "Students" },
-                  { href: "#calendar", label: "Calendar" },
-                  { href: "#analytics", label: "Analytics" }
-                ].map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                ))}
+                {/* Navigation links removed - available in sidebar */}
               </SignedIn>
               <SignedOut>
                 {[
