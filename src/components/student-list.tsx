@@ -254,8 +254,8 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
 
       {aiPlannerModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-indigo-50 to-purple-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-indigo-50 to-purple-50 flex-shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">AI Lesson Planner</h2>
                 <p className="text-gray-600 text-sm">Generate personalized lesson plans with AI</p>
@@ -270,7 +270,7 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
                 </svg>
               </Button>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               <AILessonPlanner
                 studentId={aiPlannerModal.studentId}
                 studentName={aiPlannerModal.studentName}
@@ -285,8 +285,8 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
 
       {enhancedAiPlannerModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Enhanced AI Lesson Planner</h2>
                 <p className="text-gray-600 text-sm">Create lessons based on previous lesson context</p>
@@ -301,7 +301,7 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
                 </svg>
               </Button>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               <EnhancedAIPlanner
                 studentId={enhancedAiPlannerModal.studentId}
                 studentName={enhancedAiPlannerModal.studentName}

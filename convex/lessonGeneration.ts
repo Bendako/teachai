@@ -175,7 +175,7 @@ export const generateComprehensiveLessonPlan = action({
       }
 
       // Step 2: Analyze student progress
-      const progressAnalysis: ProgressAnalysisResult = await ctx.runQuery(api.progressAnalysis.analyzeStudentProgress, {
+      const progressAnalysis = await ctx.runQuery(api.progressAnalysis.analyzeStudentProgress, {
         studentId: args.studentId,
         timeframeWeeks: 4,
       });
@@ -186,7 +186,7 @@ export const generateComprehensiveLessonPlan = action({
       const specificGoals = args.specificGoals || [`Improve ${focusSkills.join(" and ")}`];
 
       // Step 4: Create generation history record
-      const generationId: Id<"ai_generation_history"> = await ctx.runMutation(api.aiGeneration.createGenerationHistory, {
+      const generationId = await ctx.runMutation(api.aiGeneration.createGenerationHistory, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         aiProvider: AI_CONFIG.primaryProvider,
@@ -230,11 +230,20 @@ export const generateComprehensiveLessonPlan = action({
       });
 
       // Step 7: Create AI lesson plan record
-      const lessonPlanId: Id<"ai_lesson_plans"> = await ctx.runMutation(api.aiLessonPlans.createAILessonPlan, {
+      const lessonPlanId = await ctx.runMutation(api.aiLessonPlans.createAILessonPlan, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         generationId,
-        ...result.lessonPlan,
+        title: result.lessonPlan.title,
+        description: result.lessonPlan.description,
+        difficulty: result.lessonPlan.difficulty,
+        estimatedDuration: result.lessonPlan.estimatedDuration,
+        objectives: result.lessonPlan.objectives,
+        activities: result.lessonPlan.activities,
+        materials: result.lessonPlan.materials,
+        homework: result.lessonPlan.homework,
+        assessmentCriteria: result.lessonPlan.assessmentCriteria,
+        adaptationNotes: result.lessonPlan.adaptationNotes,
       });
 
       return {
@@ -294,7 +303,7 @@ export const createLessonFromAILessonPlan = action({
       }
 
       // Create regular lesson with AI-generated content
-      const lessonId: Id<"lessons"> = await ctx.runMutation(api.lessons.createLesson, {
+      const lessonId = await ctx.runMutation(api.lessons.createLesson, {
         teacherId: args.teacherId,
         studentId: args.studentId,
         title: args.title || aiLessonPlan.title,

@@ -188,7 +188,7 @@ export function AILessonPlanner({
     if (files.length > 0) {
       handleFileUpload(files);
     }
-  }, []);
+  }, [handleFileUpload]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
