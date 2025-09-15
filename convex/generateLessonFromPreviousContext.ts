@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
 import { analyzePreviousLessonPerformance, generateEnhancedPrompt, generateWithClaude } from "./lessonHelpers";
 
 // Enhanced lesson generation with previous lesson context
@@ -57,88 +56,25 @@ export const generateLessonFromPreviousContext = action({
   }),
   handler: async (ctx, args) => {
     try {
-      // Step 1: Get previous lesson data
-      const previousLesson: {
-        _id: string;
-        _creationTime: number;
-        teacherId: string;
-        studentId: string;
-        title: string;
-        description?: string;
-        scheduledAt: number;
-        duration: number;
-        status: "planned" | "in_progress" | "completed" | "cancelled";
-        lessonPlan?: {
-          objectives: string[];
-          activities: string[];
-          materials: string[];
-          homework?: string;
-        };
-        createdAt: number;
-        updatedAt: number;
-      } | null = await ctx.runQuery(api.lessons.getLesson, {
-        lessonId: args.previousLessonId,
-      });
+      // Step 1: Get previous lesson data directly from database
+      const previousLesson = await ctx.db.get(args.previousLessonId);
 
       if (!previousLesson) {
         return { success: false, error: "Previous lesson not found" };
       }
 
-      // Step 2: Get progress data from previous lesson
-      const previousProgress: {
-        _id: string;
-        _creationTime: number;
-        lessonId: string;
-        studentId: string;
-        teacherId: string;
-        skills: {
-          reading: number;
-          writing: number;
-          speaking: number;
-          listening: number;
-          grammar: number;
-          vocabulary: number;
-        };
-        topicsCovered: string[];
-        notes: string;
-        homework?: {
-          assigned: string;
-          completed: boolean;
-          feedback?: string;
-        };
-        createdAt: number;
-      } | null = await ctx.runQuery(api.progress.getProgressByLesson, {
-        lessonId: args.previousLessonId,
-      });
+      // Step 2: Get progress data from previous lesson directly from database
+      const previousProgress = await ctx.db
+        .query("progress")
+        .withIndex("by_lesson", (q) => q.eq("lessonId", args.previousLessonId))
+        .unique();
 
       if (!previousProgress) {
         return { success: false, error: "Previous lesson progress not found" };
       }
 
-      // Step 3: Get student data
-      const student: {
-        _id: string;
-        _creationTime: number;
-        teacherId: string;
-        name: string;
-        email?: string;
-        phone?: string;
-        dateOfBirth?: string;
-        level: "beginner" | "intermediate" | "advanced";
-        goals: string[];
-        notes?: string;
-        parentInfo?: {
-          name: string;
-          email: string;
-          phone?: string;
-          relationship: string;
-        };
-        isActive: boolean;
-        createdAt: number;
-        updatedAt: number;
-      } | null = await ctx.runQuery(api.students.getStudent, {
-        studentId: args.studentId,
-      });
+      // Step 3: Get student data directly from database
+      const student = await ctx.db.get(args.studentId);
 
       if (!student) {
         return { success: false, error: "Student not found" };
