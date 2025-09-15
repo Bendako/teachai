@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 
 // Create a new student
 export const createStudent = mutation({
@@ -235,5 +235,37 @@ export const searchStudents = query({
         level: student.level,
         isActive: student.isActive,
       }));
+  },
+});
+
+// Internal version of getStudent for use in actions
+export const internalGetStudent = internalQuery({
+  args: { studentId: v.id("students") },
+  returns: v.union(
+    v.object({
+      _id: v.id("students"),
+      _creationTime: v.number(),
+      teacherId: v.id("users"),
+      name: v.string(),
+      email: v.optional(v.string()),
+      phone: v.optional(v.string()),
+      dateOfBirth: v.optional(v.string()),
+      level: v.union(v.literal("beginner"), v.literal("intermediate"), v.literal("advanced")),
+      goals: v.array(v.string()),
+      notes: v.optional(v.string()),
+      parentInfo: v.optional(v.object({
+        name: v.string(),
+        email: v.string(),
+        phone: v.optional(v.string()),
+        relationship: v.string(),
+      })),
+      isActive: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.studentId);
   },
 }); 

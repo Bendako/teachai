@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 
 // Create a new lesson
 export const createLesson = mutation({
@@ -472,5 +472,40 @@ export const getTodaysLessons = query({
     );
 
     return lessonsWithStudentNames;
+  },
+});
+
+// Internal version of getLesson for use in actions
+export const internalGetLesson = internalQuery({
+  args: { lessonId: v.id("lessons") },
+  returns: v.union(
+    v.object({
+      _id: v.id("lessons"),
+      _creationTime: v.number(),
+      teacherId: v.id("users"),
+      studentId: v.id("students"),
+      title: v.string(),
+      description: v.optional(v.string()),
+      scheduledAt: v.number(),
+      duration: v.number(),
+      status: v.union(
+        v.literal("planned"), 
+        v.literal("in_progress"), 
+        v.literal("completed"), 
+        v.literal("cancelled")
+      ),
+      lessonPlan: v.optional(v.object({
+        objectives: v.array(v.string()),
+        activities: v.array(v.string()),
+        materials: v.array(v.string()),
+        homework: v.optional(v.string()),
+      })),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.lessonId);
   },
 }); 

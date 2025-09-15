@@ -2,6 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { analyzePreviousLessonPerformance, generateEnhancedPrompt, generateWithClaude } from "./lessonHelpers";
 
 // Enhanced lesson generation with previous lesson context
@@ -56,25 +57,28 @@ export const generateLessonFromPreviousContext = action({
   }),
   handler: async (ctx, args) => {
     try {
-      // Step 1: Get previous lesson data directly from database
-      const previousLesson = await ctx.db.get(args.previousLessonId);
+      // Step 1: Get previous lesson data using internal function
+      const previousLesson = await ctx.runQuery(internal.lessons.internalGetLesson, {
+        lessonId: args.previousLessonId,
+      });
 
       if (!previousLesson) {
         return { success: false, error: "Previous lesson not found" };
       }
 
-      // Step 2: Get progress data from previous lesson directly from database
-      const previousProgress = await ctx.db
-        .query("progress")
-        .withIndex("by_lesson", (q) => q.eq("lessonId", args.previousLessonId))
-        .unique();
+      // Step 2: Get progress data from previous lesson using internal function
+      const previousProgress = await ctx.runQuery(internal.progress.internalGetProgressByLesson, {
+        lessonId: args.previousLessonId,
+      });
 
       if (!previousProgress) {
         return { success: false, error: "Previous lesson progress not found" };
       }
 
-      // Step 3: Get student data directly from database
-      const student = await ctx.db.get(args.studentId);
+      // Step 3: Get student data using internal function
+      const student = await ctx.runQuery(internal.students.internalGetStudent, {
+        studentId: args.studentId,
+      });
 
       if (!student) {
         return { success: false, error: "Student not found" };

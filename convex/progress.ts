@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 
 // Create a new progress record for a lesson
 export const createProgress = mutation({
@@ -347,5 +347,42 @@ export const getRecentProgress = query({
     );
 
     return progressWithNames;
+  },
+});
+
+// Internal version of getProgressByLesson for use in actions
+export const internalGetProgressByLesson = internalQuery({
+  args: { lessonId: v.id("lessons") },
+  returns: v.union(
+    v.object({
+      _id: v.id("progress"),
+      _creationTime: v.number(),
+      lessonId: v.id("lessons"),
+      studentId: v.id("students"),
+      teacherId: v.id("users"),
+      skills: v.object({
+        reading: v.number(),
+        writing: v.number(),
+        speaking: v.number(),
+        listening: v.number(),
+        grammar: v.number(),
+        vocabulary: v.number(),
+      }),
+      topicsCovered: v.array(v.string()),
+      notes: v.string(),
+      homework: v.optional(v.object({
+        assigned: v.string(),
+        completed: v.boolean(),
+        feedback: v.optional(v.string()),
+      })),
+      createdAt: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("progress")
+      .withIndex("by_lesson", (q) => q.eq("lessonId", args.lessonId))
+      .unique();
   },
 }); 
