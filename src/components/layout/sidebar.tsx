@@ -158,7 +158,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
     <div className={`bg-white border-r border-gray-200 h-screen transition-all duration-300 shadow-sm ${isCollapsed ? 'w-16' : 'w-72'}`}>
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-xl flex items-center justify-center shadow-sm">
@@ -205,13 +205,13 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
                 activeSection === item.id
                   ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white shadow-md'
                   : 'text-gray-700 hover:bg-gray-50 hover:text-[#6366F1] hover:shadow-sm'
               }`}
             >
-              <div className={`mr-4 ${activeSection === item.id ? 'text-white' : 'text-gray-400 group-hover:text-[#6366F1]'}`}>
+              <div className={`${isCollapsed ? '' : 'mr-4'} ${activeSection === item.id ? 'text-white' : 'text-gray-400 group-hover:text-[#6366F1]'}`}>
                 {getIcon(item.icon)}
               </div>
               {!isCollapsed && (
