@@ -58,7 +58,25 @@ export const generateLessonFromPreviousContext = action({
   handler: async (ctx, args) => {
     try {
       // Step 1: Get previous lesson data
-      const previousLesson = await ctx.runQuery(api.lessons.getLesson, {
+      const previousLesson: {
+        _id: string;
+        _creationTime: number;
+        teacherId: string;
+        studentId: string;
+        title: string;
+        description?: string;
+        scheduledAt: number;
+        duration: number;
+        status: "planned" | "in_progress" | "completed" | "cancelled";
+        lessonPlan?: {
+          objectives: string[];
+          activities: string[];
+          materials: string[];
+          homework?: string;
+        };
+        createdAt: number;
+        updatedAt: number;
+      } | null = await ctx.runQuery(api.lessons.getLesson, {
         lessonId: args.previousLessonId,
       });
 
@@ -67,7 +85,29 @@ export const generateLessonFromPreviousContext = action({
       }
 
       // Step 2: Get progress data from previous lesson
-      const previousProgress = await ctx.runQuery(api.progress.getProgressByLesson, {
+      const previousProgress: {
+        _id: string;
+        _creationTime: number;
+        lessonId: string;
+        studentId: string;
+        teacherId: string;
+        skills: {
+          reading: number;
+          writing: number;
+          speaking: number;
+          listening: number;
+          grammar: number;
+          vocabulary: number;
+        };
+        topicsCovered: string[];
+        notes: string;
+        homework?: {
+          assigned: string;
+          completed: boolean;
+          feedback?: string;
+        };
+        createdAt: number;
+      } | null = await ctx.runQuery(api.progress.getProgressByLesson, {
         lessonId: args.previousLessonId,
       });
 
@@ -76,7 +116,27 @@ export const generateLessonFromPreviousContext = action({
       }
 
       // Step 3: Get student data
-      const student = await ctx.runQuery(api.students.getStudent, {
+      const student: {
+        _id: string;
+        _creationTime: number;
+        teacherId: string;
+        name: string;
+        email?: string;
+        phone?: string;
+        dateOfBirth?: string;
+        level: "beginner" | "intermediate" | "advanced";
+        goals: string[];
+        notes?: string;
+        parentInfo?: {
+          name: string;
+          email: string;
+          phone?: string;
+          relationship: string;
+        };
+        isActive: boolean;
+        createdAt: number;
+        updatedAt: number;
+      } | null = await ctx.runQuery(api.students.getStudent, {
         studentId: args.studentId,
       });
 
