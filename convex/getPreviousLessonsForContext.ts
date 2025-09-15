@@ -2,7 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import { analyzePreviousLessonPerformance } from "./lessonHelpers";
 
 // Get previous lessons for context
@@ -38,6 +38,8 @@ export const getPreviousLessonsForContext = action({
   }),
   handler: async (ctx, args) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { api } = (await import("./_generated/api")) as any;
       const limit = args.limit || 5;
 
       // Get recent completed lessons
@@ -46,10 +48,30 @@ export const getPreviousLessonsForContext = action({
       });
 
       const completedLessons = recentLessons
-        .filter(lesson => lesson.status === "completed")
+        .filter((lesson: { status: "planned" | "in_progress" | "completed" | "cancelled" }) => lesson.status === "completed")
         .slice(0, limit);
 
-      const lessonsWithContext = [];
+      const lessonsWithContext: Array<{
+        lessonId: Id<"lessons">;
+        title: string;
+        scheduledAt: number;
+        topicsCovered: string[];
+        skillsAssessed: {
+          reading: number;
+          writing: number;
+          speaking: number;
+          listening: number;
+          grammar: number;
+          vocabulary: number;
+        };
+        notes: string;
+        performance: {
+          averageScore: number;
+          areasForImprovement: string[];
+          strengths: string[];
+          overallPerformance: string;
+        };
+      }> = [];
 
       for (const lesson of completedLessons) {
         const progress = await ctx.runQuery(api.progress.getProgressByLesson, {

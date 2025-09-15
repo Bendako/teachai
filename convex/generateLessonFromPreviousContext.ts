@@ -2,7 +2,6 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { analyzePreviousLessonPerformance, generateEnhancedPrompt, generateWithClaude } from "./lessonHelpers";
 
 // Enhanced lesson generation with previous lesson context
@@ -57,6 +56,8 @@ export const generateLessonFromPreviousContext = action({
   }),
   handler: async (ctx, args) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { internal } = (await import("./_generated/api")) as any;
       // Step 1: Get previous lesson data using internal function
       const previousLesson = await ctx.runQuery(internal.lessons.internalGetLesson, {
         lessonId: args.previousLessonId,
