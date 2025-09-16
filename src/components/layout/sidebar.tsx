@@ -3,17 +3,11 @@
 import { useState } from "react";
 
 interface SidebarProps {
-  currentUser: {
-    _id: string;
-    name?: string;
-    email?: string;
-    imageUrl?: string;
-  } | null;
   onNavigate: (section: string) => void;
   activeSection: string;
 }
 
-export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps) {
+export function Sidebar({ onNavigate, activeSection }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navigationItems = [

@@ -360,7 +360,6 @@ function TeacherDashboard() {
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar 
-        currentUser={currentUser}
         onNavigate={setActiveSection}
         activeSection={activeSection}
       />
