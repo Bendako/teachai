@@ -5,7 +5,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { StudentList } from "../components/student-list";
 import { AnalyticsDashboard } from "../components/analytics-dashboard";
-import { UnifiedCalendar } from "../components/unified-calendar";
+import { SimpleLessonScheduler } from "../components/simple-lesson-scheduler";
+import { UpcomingLessons } from "../components/upcoming-lessons";
 import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
 import { TodaysSchedule, RecentActivity, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
 import { LandingPage } from "../components/landing-page";
@@ -186,22 +187,20 @@ function TeacherDashboard() {
       case "calendar":
         return (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-8">
-                <UnifiedCalendar
-                  teacherId={currentUser._id}
-                  onDateClick={(date) => {
-                    setSelectedDate(date);
-                    setShowScheduler(true);
-                  }}
-                  onCreateLesson={(date, time) => {
-                    setSelectedDate(date);
-                    setSelectedTime(time);
-                    setShowScheduler(true);
-                  }}
-                />
-              </div>
-            </div>
+            <SimpleLessonScheduler 
+              teacherId={currentUser._id}
+              onScheduled={() => {
+                // Refresh the page or update state as needed
+                window.location.reload();
+              }}
+            />
+            <UpcomingLessons 
+              teacherId={currentUser._id}
+              onLessonClick={(lessonId) => {
+                // Handle lesson click - could open details modal
+                console.log("Lesson clicked:", lessonId);
+              }}
+            />
           </div>
         );
       

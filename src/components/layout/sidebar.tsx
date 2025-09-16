@@ -31,7 +31,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
     },
     {
       id: "calendar",
-      label: "Calendar",
+      label: "Schedule",
       icon: "calendar",
       description: "Lesson scheduling"
     },
