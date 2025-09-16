@@ -357,7 +357,7 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar 
         currentUser={currentUser}
@@ -366,9 +366,11 @@ function TeacherDashboard() {
       />
       
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 w-full">
-          {renderSection()}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 w-full">
+            {renderSection()}
+          </div>
         </div>
       </div>
 

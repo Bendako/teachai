@@ -155,9 +155,9 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
   };
 
   return (
-    <div className={`bg-white border-r border-gray-200 h-screen transition-all duration-300 shadow-sm ${isCollapsed ? 'w-16' : 'w-72'}`}>
+    <div className={`bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 shadow-sm ${isCollapsed ? 'w-16' : 'w-72'}`}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-gray-100 flex-shrink-0">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
@@ -185,7 +185,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
 
       {/* User Profile */}
       {!isCollapsed && currentUser && (
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
               {currentUser.name?.charAt(0) || 'T'}
@@ -199,7 +199,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-6">
+      <nav className="flex-1 overflow-y-auto py-6 min-h-0">
         <div className="px-4 space-y-2">
           {navigationItems.map((item) => (
             <button
@@ -229,7 +229,7 @@ export function Sidebar({ currentUser, onNavigate, activeSection }: SidebarProps
 
       {/* Footer */}
       {!isCollapsed && (
-        <div className="p-6 border-t border-gray-100 bg-gray-50">
+        <div className="p-6 border-t border-gray-100 bg-gray-50 flex-shrink-0">
           <div className="text-center">
             <div className="text-xs text-gray-500 font-medium mb-1">TeachAI Dashboard</div>
             <div className="text-xs text-gray-400">v1.0.0</div>
