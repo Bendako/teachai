@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -32,25 +32,7 @@ export function GoogleCalendarIntegration({ teacherId }: GoogleCalendarIntegrati
   const disconnectCalendar = useMutation(api.googleCalendar.disconnectGoogleCalendar);
   const storeGoogleCalendarConnection = useMutation(api.googleCalendar.storeGoogleCalendarConnection);
 
-  // Handle OAuth callback from URL parameters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authCode = urlParams.get('auth_code');
-    const teacherIdParam = urlParams.get('teacher_id');
-    const oauthProvider = urlParams.get('oauth_provider');
-
-    if (authCode && teacherIdParam === teacherId && oauthProvider === 'google') {
-      handleOAuthCallback(authCode);
-      // Clean up URL parameters
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('auth_code');
-      newUrl.searchParams.delete('teacher_id');
-      newUrl.searchParams.delete('oauth_provider');
-      window.history.replaceState({}, '', newUrl.toString());
-    }
-  }, [teacherId, handleAuthCallback]);
-
-  const handleOAuthCallback = async (code: string) => {
+  const handleOAuthCallback = useCallback(async (code: string) => {
     setIsConnecting(true);
     try {
       const result = await handleAuthCallback({ code, teacherId });
@@ -73,7 +55,25 @@ export function GoogleCalendarIntegration({ teacherId }: GoogleCalendarIntegrati
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [handleAuthCallback, storeGoogleCalendarConnection, teacherId]);
+
+  // Handle OAuth callback from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authCode = urlParams.get('auth_code');
+    const teacherIdParam = urlParams.get('teacher_id');
+    const oauthProvider = urlParams.get('oauth_provider');
+
+    if (authCode && teacherIdParam === teacherId && oauthProvider === 'google') {
+      handleOAuthCallback(authCode);
+      // Clean up URL parameters
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('auth_code');
+      newUrl.searchParams.delete('teacher_id');
+      newUrl.searchParams.delete('oauth_provider');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [teacherId, handleOAuthCallback]);
 
   const handleConnect = async () => {
     setIsConnecting(true);

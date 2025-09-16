@@ -114,7 +114,7 @@ export function AILessonPlanner({
     }));
   };
 
-  const handleFileUpload = async (files: FileList | File[]) => {
+  const handleFileUpload = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const maxFileSize = 10 * 1024 * 1024; // 10MB
     const allowedTypes = [
@@ -175,7 +175,7 @@ export function AILessonPlanner({
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [generateUploadUrl]);
 
   const removeFile = (fileId: Id<"_storage">) => {
     setUploadedFiles(prev => prev.filter(file => file.id !== fileId));

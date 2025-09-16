@@ -41,12 +41,14 @@ export function SimpleLessonScheduler({
     setIsScheduling(true);
     try {
       if (scheduleType === "single") {
-        await scheduleSingleLesson();
+        const lessonId = await scheduleSingleLesson();
+        if (lessonId) {
+          onScheduled?.(lessonId);
+        }
       } else {
         await scheduleRecurringLessons();
       }
       
-      onScheduled?.(selectedStudentId as Id<"lessons">);
       resetForm();
     } catch (error) {
       console.error("Failed to schedule lesson:", error);
@@ -55,20 +57,21 @@ export function SimpleLessonScheduler({
     }
   };
 
-  const scheduleSingleLesson = async () => {
+  const scheduleSingleLesson = async (): Promise<Id<"lessons"> | undefined> => {
     if (!selectedDate) return;
 
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const scheduledDateTime = new Date(selectedDate);
     scheduledDateTime.setHours(hours, minutes, 0, 0);
 
-    await createLesson({
+    const lessonId = await createLesson({
       teacherId,
       studentId: selectedStudentId!,
       title: lessonTitle,
       scheduledAt: scheduledDateTime.getTime(),
       duration,
     });
+    return lessonId as Id<"lessons">;
   };
 
   const scheduleRecurringLessons = async () => {
@@ -113,12 +116,6 @@ export function SimpleLessonScheduler({
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
-  };
-
-  const getNextWeekDate = () => {
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    return nextWeek.toISOString().split('T')[0];
   };
 
   const dayOptions = [

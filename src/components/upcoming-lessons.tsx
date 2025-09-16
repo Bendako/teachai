@@ -38,20 +38,22 @@ export function UpcomingLessons({ teacherId, onLessonClick }: UpcomingLessonsPro
   }, [selectedDate, viewPeriod]);
 
   // Fetch lessons and students
-  const lessons = useQuery(api.lessons.getLessonsByDateRange, {
+  const lessonsData = useQuery(api.lessons.getLessonsByDateRange, {
     teacherId,
     startDate,
     endDate,
-  }) || [];
+  });
+  const lessons = useMemo(() => lessonsData ?? [], [lessonsData]);
 
-  const students = useQuery(api.students.getStudentsByTeacher, { teacherId }) || [];
+  const studentsData = useQuery(api.students.getStudentsByTeacher, { teacherId });
+  const students = useMemo(() => studentsData ?? [], [studentsData]);
   const studentsMap = useMemo(() => {
     const map = new Map();
     students.forEach(student => map.set(student._id, student));
     return map;
   }, [students]);
 
-  const deleteLesson = useMutation(api.lessons.deleteLesson);
+  const updateLessonStatus = useMutation(api.lessons.updateLessonStatus);
 
   // Group lessons by date
   const lessonsByDate = useMemo(() => {
@@ -76,7 +78,7 @@ export function UpcomingLessons({ teacherId, onLessonClick }: UpcomingLessonsPro
   const handleDeleteLesson = async (lessonId: Id<"lessons">) => {
     if (confirm("Are you sure you want to delete this lesson?")) {
       try {
-        await deleteLesson({ lessonId });
+        await updateLessonStatus({ lessonId, status: "cancelled" });
       } catch (error) {
         console.error("Failed to delete lesson:", error);
       }

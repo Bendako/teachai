@@ -60,7 +60,7 @@ function TeacherDashboard() {
   const createUser = useMutation(api.users.createUser);
   const seedSampleData = useMutation(api.seedData.seedSampleData);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState("09:00");
+  const [selectedTime] = useState("09:00");
   const [showScheduler, setShowScheduler] = useState(false);
 
   useEffect(() => {
