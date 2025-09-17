@@ -45,7 +45,10 @@ export function UpcomingLessons({ teacherId, onLessonClick }: UpcomingLessonsPro
   });
   const lessons = useMemo(() => lessonsData ?? [], [lessonsData]);
 
-  const studentsData = useQuery(api.students.getStudentsByTeacher, { teacherId });
+  const studentsData = useQuery(api.students.getStudentsByTeacher, { 
+    teacherId,
+    activeOnly: true 
+  });
   const students = useMemo(() => studentsData ?? [], [studentsData]);
   const studentsMap = useMemo(() => {
     const map = new Map();

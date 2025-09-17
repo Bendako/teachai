@@ -32,7 +32,10 @@ export function SimpleLessonScheduler({
   const [recurringTime, setRecurringTime] = useState("09:00");
   const [weeksAhead, setWeeksAhead] = useState(4);
 
-  const students = useQuery(api.students.getStudentsByTeacher, { teacherId }) || [];
+  const students = useQuery(api.students.getStudentsByTeacher, { 
+    teacherId,
+    activeOnly: true 
+  }) || [];
   const createLesson = useMutation(api.lessons.createLesson);
 
   const handleSchedule = async () => {
