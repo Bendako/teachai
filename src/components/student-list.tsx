@@ -323,7 +323,6 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
       {editingStudent && (
         <EditStudentForm 
           student={editingStudent}
-          teacherId={teacherId}
           onClose={() => setEditingStudent(null)}
           onUpdate={async (updatedData) => {
             try {
@@ -396,8 +395,10 @@ type Student = {
   _id: Id<"students">;
   name: string;
   email?: string;
+  phone?: string;
   level: "beginner" | "intermediate" | "advanced";
   goals: string[];
+  notes?: string;
   parentInfo?: {
     name: string;
     email: string;
@@ -760,14 +761,12 @@ function AddStudentForm({ teacherId, onClose }: { teacherId: Id<"users">; onClos
 
 function EditStudentForm({ 
   student, 
-  teacherId, 
   onClose, 
   onUpdate 
 }: { 
   student: Student; 
-  teacherId: Id<"users">; 
   onClose: () => void;
-  onUpdate: (data: any) => Promise<void>;
+  onUpdate: (data: Partial<Student>) => Promise<void>;
 }) {
   const [formData, setFormData] = useState({
     name: student.name,
@@ -813,7 +812,7 @@ function EditStudentForm({
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-2xl font-bold text-white">Edit Student</h3>
-              <p className="text-blue-100 mt-1">Update {student.name}'s information</p>
+              <p className="text-blue-100 mt-1">Update {student.name}&apos;s information</p>
             </div>
             <button
               onClick={onClose}

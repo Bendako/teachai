@@ -55,9 +55,6 @@ function TeacherDashboard() {
     clerkId: user?.id || "" 
   });
   const createUser = useMutation(api.users.createUser);
-  const seedSampleData = useMutation(api.seedData.seedSampleData);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime] = useState("09:00");
 
   useEffect(() => {
     setMounted(true);
