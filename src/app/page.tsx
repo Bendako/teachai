@@ -34,15 +34,13 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white overflow-x-hidden">
+    <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#F8FAFF] via-white to-[#F7FAFF]">
       <SignedOut>
         <LandingPage />
       </SignedOut>
 
       <SignedIn>
-        <div className="container mx-auto px-4 py-8">
-          <TeacherDashboard />
-        </div>
+        <TeacherDashboard />
       </SignedIn>
     </main>
   );
@@ -108,58 +106,43 @@ function TeacherDashboard() {
       case "dashboard":
         return (
           <div className="space-y-6">
-            {/* Quick Stats */}
+            {/* Full Width Layout */}
             <div className="w-full">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Overview</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
-                <StatCard title="Total Students" value="1" icon="users" />
-                <StatCard title="This Week's Lessons" value="3" icon="book" />
-                <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setActiveSection("calendar")} />
-                <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setActiveSection("analytics")} />
-              </div>
-            </div>
-
-            {/* Main Dashboard Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column */}
-              <div className="space-y-6">
-                <TodaysSchedule 
-                  teacherId={currentUser._id} 
-                  onNavigateToSection={setActiveSection} 
-                />
-                <RecentActivity teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
-              </div>
-              
-              {/* Right Column */}
-              <div className="space-y-6">
-                <QuickActions onNavigateToSection={setActiveSection} />
-                <PerformanceInsights teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
-              </div>
-            </div>
-            
-            {/* Sample Data Button */}
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-blue-900">Demo Mode</h3>
-                  <p className="text-xs text-blue-700 mt-1">Add sample students and lessons to see the system in action</p>
+              {/* Top Row - Quick Stats */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Overview</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 w-auto mx-auto">
+                  <StatCard title="Total Students" value="1" icon="users" />
+                  <StatCard title="This Week's Lessons" value="3" icon="book" />
+                  <StatCard title="Calendar" value="Schedule" icon="calendar" isAnalytics={true} onClick={() => setActiveSection("calendar")} />
+                  <StatCard title="Analytics" value="Analytics" icon="search" isAnalytics={true} onClick={() => setActiveSection("analytics")} />
                 </div>
-                <Button
-                  onClick={async () => {
-                    if (currentUser) {
-                      const result = await seedSampleData({ teacherId: currentUser._id });
-                      if (result.success) {
-                        alert(result.message);
-                        window.location.reload();
-                      } else {
-                        alert("Failed to create sample data: " + result.message);
-                      }
-                    }
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2"
-                >
-                  Add Sample Data
-                </Button>
+              </div>
+
+              {/* Main Content Row - 12 col layout */}
+              <div className="grid grid-cols-12 gap-6 w-full">
+                {/* Today's Schedule */}
+                <div className="col-span-12 md:col-span-6 xl:col-span-5">
+                  <TodaysSchedule 
+                    teacherId={currentUser._id} 
+                    onNavigateToSection={setActiveSection} 
+                  />
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="col-span-12 md:col-span-6 xl:col-span-4">
+                  <QuickActions onNavigateToSection={setActiveSection} />
+                </div>
+
+                {/* Performance Insights (moved higher) */}
+                <div className="col-span-12 xl:col-span-3">
+                  <PerformanceInsights teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
+                </div>
+
+                {/* Recent Activity */}
+                <div className="col-span-12">
+                  <RecentActivity teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
+                </div>
               </div>
             </div>
           </div>
@@ -167,15 +150,15 @@ function TeacherDashboard() {
       
       case "students":
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="space-y-6 w-full">
+            <div className="flex items-center justify-between w-full">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Student Management</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
                 <p className="text-sm text-gray-600 mt-1">Manage your student profiles and information</p>
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full">
+              <div className="p-6">
                 <StudentList teacherId={currentUser._id} />
               </div>
             </div>
@@ -184,7 +167,7 @@ function TeacherDashboard() {
       
       case "calendar":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 w-full">
             <SimpleLessonScheduler 
               teacherId={currentUser._id}
               onScheduled={() => {
@@ -256,14 +239,14 @@ function TeacherDashboard() {
       
       case "analytics":
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-6 w-full">
+            <div className="flex items-center justify-between w-full">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h2>
                 <p className="text-gray-600 mt-1">Track student progress and performance insights</p>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden w-full">
               <div className="p-8">
                 <AnalyticsDashboard teacherId={currentUser._id} onClose={() => {}} />
               </div>
@@ -273,7 +256,7 @@ function TeacherDashboard() {
       
       case "progress":
         return (
-          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Progress Tracker</h2>
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -292,7 +275,7 @@ function TeacherDashboard() {
       
       case "lesson-history":
         return (
-          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Lesson History</h2>
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -311,7 +294,7 @@ function TeacherDashboard() {
       
       case "emails":
         return (
-          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 w-full">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Management</h2>
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -341,7 +324,7 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-transparent">
       {/* Sidebar */}
       <Sidebar 
         onNavigate={setActiveSection}
@@ -350,8 +333,8 @@ function TeacherDashboard() {
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 w-full">
+      <div className="flex-1 overflow-y-auto">
+          <div className="w-full max-w-screen-2xl mx-auto px-4 lg:px-8 pt-6 pb-24">
             {renderSection()}
           </div>
         </div>
@@ -369,7 +352,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
   onClick?: () => void;
 }) {
   const getIcon = (iconName: string) => {
-    const iconProps = "w-5 h-5 text-[#6366F1]";
+    const iconProps = "w-5 h-5 text-[#6366F1] flex-shrink-0";
     switch (iconName) {
       case 'users':
         return (
@@ -407,13 +390,13 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
   };
 
   const cardContent = (
-    <div className="flex items-center">
-      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#F5F5FF] to-[#E0E7FF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="w-12 h-12 bg-gradient-to-br from-[#F5F5FF] to-[#E0E7FF] rounded-lg flex items-center justify-center shadow-sm">
         {getIcon(icon)}
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <p className="text-xs font-medium text-gray-600 truncate mb-1">{title}</p>
-        <p className="text-lg font-bold text-gray-900 truncate">{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-gray-600 leading-tight line-clamp-2">{title}</p>
+        <p className="text-lg font-bold text-gray-900 leading-tight">{value}</p>
       </div>
     </div>
   );
@@ -422,7 +405,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
     return (
       <button
         onClick={onClick}
-        className="w-full bg-white rounded-lg shadow-sm p-3 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] hover:bg-gradient-to-br hover:from-[#F5F5FF] hover:to-white transition-all duration-300 text-left cursor-pointer transform hover:scale-[1.02] group overflow-hidden"
+        className="w-full min-w-[220px] bg-white rounded-xl shadow-sm p-3 border border-gray-100 hover:shadow-md hover:border-[#6366F1] transition-all duration-200 text-left justify-self-stretch"
       >
         {cardContent}
       </button>
@@ -430,7 +413,7 @@ function StatCard({ title, value, icon, isAnalytics, onClick }: {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100 hover:shadow-lg hover:border-[#6366F1] transition-all duration-300 transform hover:scale-[1.02] group overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm p-3 border border-gray-100 hover:shadow-md hover:border-[#6366F1] transition-all duration-200 w-full min-w-[220px]">
       {cardContent}
     </div>
   );

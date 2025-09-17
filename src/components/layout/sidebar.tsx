@@ -142,7 +142,7 @@ export function Sidebar({ onNavigate, activeSection }: SidebarProps) {
   };
 
   return (
-    <div className={`bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 shadow-sm ${isCollapsed ? 'w-16' : 'w-72'}`}>
+    <div className={`bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 shadow-sm ${isCollapsed ? 'w-16' : 'w-64'}`}>
       {/* Header */}
       <div className="p-6 border-b border-gray-100 flex-shrink-0">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
