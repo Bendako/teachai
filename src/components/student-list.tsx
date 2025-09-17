@@ -18,8 +18,12 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
   });
   
   const getOrCreateLesson = useMutation(api.lessons.getOrCreateLesson);
+  const updateStudent = useMutation(api.students.updateStudent);
+  const deleteStudent = useMutation(api.students.deleteStudent);
   
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [activeLessonData, setActiveLessonData] = useState<{
     lessonId: Id<"lessons">;
     studentId: Id<"students">;
@@ -117,6 +121,8 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
               onViewHistory={(studentId, studentName, studentLevel) =>
                 setViewingHistory({ studentId, studentName, studentLevel })
               }
+              onEdit={(student) => setEditingStudent(student)}
+              onDelete={(student) => setDeletingStudent(student)}
             />
           ))}
         </div>
@@ -312,6 +318,76 @@ export function StudentList({ teacherId }: { teacherId: Id<"users"> }) {
           </div>
         </div>
       )}
+
+      {/* Edit Student Modal */}
+      {editingStudent && (
+        <EditStudentForm 
+          student={editingStudent}
+          teacherId={teacherId}
+          onClose={() => setEditingStudent(null)}
+          onUpdate={async (updatedData) => {
+            try {
+              await updateStudent({
+                studentId: editingStudent._id,
+                ...updatedData,
+              });
+              setEditingStudent(null);
+            } catch (error) {
+              console.error("Failed to update student:", error);
+            }
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingStudent && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete Student</h3>
+                  <p className="text-sm text-gray-600">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to delete <span className="font-semibold">{deletingStudent.name}</span>? 
+                This will remove them from your active students list.
+              </p>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setDeletingStudent(null)}
+                  className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await deleteStudent({ studentId: deletingStudent._id });
+                      setDeletingStudent(null);
+                    } catch (error) {
+                      console.error("Failed to delete student:", error);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors duration-200"
+                >
+                  Delete Student
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -330,9 +406,11 @@ type Student = {
   };
 };
 
-function StudentCard({ student, onViewHistory }: { 
+function StudentCard({ student, onViewHistory, onEdit, onDelete }: { 
   student: Student; 
   onViewHistory: (studentId: Id<"students">, studentName: string, studentLevel: "beginner" | "intermediate" | "advanced") => void;
+  onEdit: (student: Student) => void;
+  onDelete: (student: Student) => void;
 }) {
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -374,17 +452,17 @@ function StudentCard({ student, onViewHistory }: {
   };
 
   return (
-    <div 
-      onClick={() => onViewHistory(student._id, student.name, student.level)}
-      className="group relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-200 cursor-pointer overflow-hidden"
-    >
+    <div className="group relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-200 overflow-hidden">
       {/* Gradient accent line */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${getLevelColor(student.level)}`}></div>
       
       <div className="p-4">
         {/* Student Info */}
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
+          <div 
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => onViewHistory(student._id, student.name, student.level)}
+          >
             <h3 className="text-base font-semibold text-gray-900 group-hover:text-gray-700 transition-colors duration-200 truncate mb-2">
               {student.name}
             </h3>
@@ -407,11 +485,46 @@ function StudentCard({ student, onViewHistory }: {
             )}
           </div>
           
-          {/* Arrow indicator */}
-          <div className="text-gray-300 group-hover:text-gray-400 transition-colors duration-200 ml-3">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-2 ml-3">
+            {/* Edit Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(student);
+              }}
+              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 group/edit"
+              title="Edit student"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            
+            {/* Delete Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(student);
+              }}
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group/delete"
+              title="Delete student"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+            
+            {/* View Button */}
+            <button
+              onClick={() => onViewHistory(student._id, student.name, student.level)}
+              className="p-2 text-gray-300 group-hover:text-gray-400 transition-colors duration-200"
+              title="View student profile"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -636,6 +749,238 @@ function AddStudentForm({ teacherId, onClose }: { teacherId: Id<"users">; onClos
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
               >
                 Add Student
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditStudentForm({ 
+  student, 
+  teacherId, 
+  onClose, 
+  onUpdate 
+}: { 
+  student: Student; 
+  teacherId: Id<"users">; 
+  onClose: () => void;
+  onUpdate: (data: any) => Promise<void>;
+}) {
+  const [formData, setFormData] = useState({
+    name: student.name,
+    email: student.email || "",
+    phone: student.phone || "",
+    level: student.level,
+    goals: student.goals.join(", "),
+    notes: student.notes || "",
+    parentName: student.parentInfo?.name || "",
+    parentEmail: student.parentInfo?.email || "",
+    parentPhone: student.parentInfo?.phone || "",
+    parentRelationship: student.parentInfo?.relationship || "parent",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await onUpdate({
+        name: formData.name,
+        email: formData.email || undefined,
+        phone: formData.phone || undefined,
+        level: formData.level,
+        goals: formData.goals.split(",").map(g => g.trim()).filter(g => g),
+        notes: formData.notes || undefined,
+        parentInfo: formData.parentName ? {
+          name: formData.parentName,
+          email: formData.parentEmail,
+          phone: formData.parentPhone || undefined,
+          relationship: formData.parentRelationship,
+        } : undefined,
+      });
+    } catch (error) {
+      console.error("Failed to update student:", error);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-white">Edit Student</h3>
+              <p className="text-blue-100 mt-1">Update {student.name}'s information</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-all duration-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="p-8 overflow-y-auto max-h-[calc(90vh-120px)]">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Student Information */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">Student Information</h4>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Student Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                    placeholder="Enter student's full name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Level <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.level}
+                    onChange={(e) => setFormData({ ...formData, level: e.target.value as "beginner" | "intermediate" | "advanced" })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 bg-gray-50 focus:bg-white"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                    placeholder="student@example.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-800">
+                  Learning Goals (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.goals}
+                  onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
+                  placeholder="e.g., Improve speaking, Business English, IELTS preparation"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-800">
+                  Notes
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                  placeholder="Additional notes about the student..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Parent/Guardian Information */}
+            <div className="border-t border-gray-200 pt-8 space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900">Parent/Guardian Information</h4>
+                  <p className="text-sm text-gray-600">Optional contact information for the student&apos;s guardian</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Parent/Guardian Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.parentName}
+                    onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                    placeholder="Enter parent's name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Parent/Guardian Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.parentEmail}
+                    onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-gray-900 placeholder-gray-500 bg-gray-50 focus:bg-white"
+                    placeholder="parent@example.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:ring-4 focus:ring-gray-100 transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
+              >
+                Update Student
               </button>
             </div>
           </form>
