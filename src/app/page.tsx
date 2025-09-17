@@ -7,7 +7,7 @@ import { StudentList } from "../components/student-list";
 import { AnalyticsDashboard } from "../components/analytics-dashboard";
 import { SimpleLessonScheduler } from "../components/simple-lesson-scheduler";
 import { UpcomingLessons } from "../components/upcoming-lessons";
-import { TodaysSchedule, RecentActivity, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
+import { TodaysSchedule, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
 import { LandingPage } from "../components/landing-page";
 
 
@@ -137,11 +137,6 @@ function TeacherDashboard() {
                 {/* Performance Insights (moved higher) */}
                 <div className="col-span-12 xl:col-span-3">
                   <PerformanceInsights teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
-                </div>
-
-                {/* Recent Activity */}
-                <div className="col-span-12">
-                  <RecentActivity teacherId={currentUser._id} onNavigateToSection={setActiveSection} />
                 </div>
               </div>
             </div>
