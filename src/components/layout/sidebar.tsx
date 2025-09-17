@@ -64,13 +64,6 @@ export function Sidebar({ onNavigate, activeSection }: SidebarProps) {
       label: "Email Management",
       icon: "mail",
       description: "Communication tools"
-    },
-
-    {
-      id: "scheduler",
-      label: "Quick Scheduler",
-      icon: "plus-circle",
-      description: "Fast lesson scheduling"
     }
   ];
 

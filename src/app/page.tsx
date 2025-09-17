@@ -7,7 +7,6 @@ import { StudentList } from "../components/student-list";
 import { AnalyticsDashboard } from "../components/analytics-dashboard";
 import { SimpleLessonScheduler } from "../components/simple-lesson-scheduler";
 import { UpcomingLessons } from "../components/upcoming-lessons";
-import { QuickLessonScheduler } from "../components/quick-lesson-scheduler";
 import { TodaysSchedule, RecentActivity, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
 import { LandingPage } from "../components/landing-page";
 
@@ -61,7 +60,6 @@ function TeacherDashboard() {
   const seedSampleData = useMutation(api.seedData.seedSampleData);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime] = useState("09:00");
-  const [showScheduler, setShowScheduler] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -332,20 +330,6 @@ function TeacherDashboard() {
       
 
       
-      case "scheduler":
-        return (
-          <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Lesson Scheduler</h2>
-            <QuickLessonScheduler
-              teacherId={currentUser._id}
-              selectedDate={new Date()}
-              selectedTime="09:00"
-              isOpen={true}
-              onClose={() => {}}
-              onScheduled={() => {}}
-            />
-          </div>
-        );
       
       default:
         return (
@@ -373,23 +357,6 @@ function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Quick Lesson Scheduler Modal */}
-      {showScheduler && selectedDate && (
-        <QuickLessonScheduler
-          teacherId={currentUser._id}
-          selectedDate={selectedDate}
-          selectedTime={selectedTime}
-          isOpen={showScheduler}
-          onClose={() => {
-            setShowScheduler(false);
-            setSelectedDate(null);
-          }}
-          onScheduled={() => {
-            setShowScheduler(false);
-            setSelectedDate(null);
-          }}
-        />
-      )}
     </div>
   );
 }
