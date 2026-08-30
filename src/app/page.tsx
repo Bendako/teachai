@@ -9,6 +9,7 @@ import { SimpleLessonScheduler } from "../components/simple-lesson-scheduler";
 import { UpcomingLessons } from "../components/upcoming-lessons";
 import { TodaysSchedule, QuickActions, PerformanceInsights } from "../components/dashboard-widgets";
 import { LandingPage } from "../components/landing-page";
+import { useClerkConfigured } from "./AppProviders";
 
 
 import { Sidebar } from "../components/layout/sidebar";
@@ -16,6 +17,7 @@ import { Button } from "../components/ui/button";
 import { useState, useEffect } from "react";
 
 export default function Home() {
+  const clerkConfigured = useClerkConfigured();
   const [mounted, setMounted] = useState(false);
 
   // Fix hydration issues by ensuring component is mounted
@@ -29,6 +31,14 @@ export default function Home() {
         <div className="flex justify-center items-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6366F1]"></div>
         </div>
+      </main>
+    );
+  }
+
+  if (!clerkConfigured) {
+    return (
+      <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#F8FAFF] via-white to-[#F7FAFF]">
+        <LandingPage />
       </main>
     );
   }

@@ -22,8 +22,8 @@ A modern web application for English teachers to manage students, plan AI-powere
 
 ## 📋 Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Node.js `>=22.13 <23`
+- npm `10.9.x` (the authoritative package manager; use the committed `package-lock.json`)
 - Convex account
 - Clerk account
 - OpenAI API key
@@ -37,7 +37,7 @@ A modern web application for English teachers to manage students, plan AI-powere
 ```bash
 git clone <repository-url>
 cd teachai
-npm install
+npm ci
 ```
 
 ### 2. Environment Configuration

@@ -2,8 +2,21 @@
 
 import { SignInButton, SignedIn, SignedOut, UserButton, SignUpButton } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useClerkConfigured } from '@/app/AppProviders'
+import { type ReactNode, useState } from 'react'
 import Link from 'next/link'
+
+function SignedOutOrPublic({ children }: { children: ReactNode }) {
+  const clerkConfigured = useClerkConfigured()
+
+  return clerkConfigured ? <SignedOut>{children}</SignedOut> : children
+}
+
+function ClerkOnly({ children }: { children: ReactNode }) {
+  const clerkConfigured = useClerkConfigured()
+
+  return clerkConfigured ? children : null
+}
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -24,7 +37,7 @@ export default function Header() {
           
           {/* Desktop Navigation - Removed redundant links as they're available in sidebar */}
           
-          <SignedOut>
+          <SignedOutOrPublic>
             <nav className="hidden md:flex items-center space-x-1">
               {[
                 { href: "#features", label: "Features" },
@@ -41,34 +54,38 @@ export default function Header() {
                 </a>
               ))}
             </nav>
-          </SignedOut>
+          </SignedOutOrPublic>
           
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
-            <SignedOut>
-              <SignInButton>
-                <Button 
-                  variant="ghost" 
-                  className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                >
-                  Sign In
-                </Button>
-              </SignInButton>
-              <SignUpButton>
-                <Button className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5855EB] hover:to-[#7C3AED] text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                  Get Started
-                </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton 
-                appearance={{
-                  elements: {
-                    avatarBox: "h-8 w-8 rounded-lg shadow-sm"
-                  }
-                }}
-              />
-            </SignedIn>
+            <ClerkOnly>
+              <>
+                <SignedOut>
+                  <SignInButton>
+                    <Button
+                      variant="ghost"
+                      className="text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                    >
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton>
+                    <Button className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5855EB] hover:to-[#7C3AED] text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                      Get Started
+                    </Button>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "h-8 w-8 rounded-lg shadow-sm"
+                      }
+                    }}
+                  />
+                </SignedIn>
+              </>
+            </ClerkOnly>
           </div>
 
           {/* Mobile menu button */}
@@ -95,10 +112,7 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden">
             <div className="space-y-1 pb-3 pt-2">
-              <SignedIn>
-                {/* Navigation links removed - available in sidebar */}
-              </SignedIn>
-              <SignedOut>
+              <SignedOutOrPublic>
                 {[
                   { href: "#features", label: "Features" },
                   { href: "#pricing", label: "Pricing" },
@@ -114,14 +128,15 @@ export default function Header() {
                     {item.label}
                   </a>
                 ))}
-              </SignedOut>
+              </SignedOutOrPublic>
             </div>
-            <div className="border-t border-gray-200 pb-3 pt-4">
-              <SignedOut>
+            <ClerkOnly>
+              <div className="border-t border-gray-200 pb-3 pt-4">
+                <SignedOut>
                 <div className="space-y-2">
                   <SignInButton>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-start text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -137,10 +152,10 @@ export default function Header() {
                     </Button>
                   </SignUpButton>
                 </div>
-              </SignedOut>
-              <SignedIn>
+                </SignedOut>
+                <SignedIn>
                 <div className="flex items-center space-x-3 px-3 py-2">
-                  <UserButton 
+                  <UserButton
                     appearance={{
                       elements: {
                         avatarBox: "h-8 w-8 rounded-lg shadow-sm"
@@ -149,8 +164,9 @@ export default function Header() {
                   />
                   <span className="text-sm font-medium text-gray-700">Account</span>
                 </div>
-              </SignedIn>
-            </div>
+                </SignedIn>
+              </div>
+            </ClerkOnly>
           </div>
         )}
       </div>
