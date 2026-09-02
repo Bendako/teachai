@@ -78,6 +78,7 @@ type Student = {
 
 export function StudentProfile({ studentId, studentName, studentLevel, teacherId, onClose, onOpenAIPlanner, onOpenEnhancedAIPlanner, onOpenEmail, onStartLesson }: StudentProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [currentTime] = useState(() => Date.now());
   
   // Get student's AI lesson plans
   const aiLessonPlans = useQuery(api.aiLessonPlans.getUnusedLessonPlansForStudent, { 
@@ -103,7 +104,7 @@ export function StudentProfile({ studentId, studentName, studentLevel, teacherId
   }
 
   const upcomingLessons = scheduledLessons.filter(lesson => 
-    lesson.status === "planned" && lesson.scheduledAt > Date.now()
+    lesson.status === "planned" && lesson.scheduledAt > currentTime
   );
   
   const aiPlansCount = aiLessonPlans.length;

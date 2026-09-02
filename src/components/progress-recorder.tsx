@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
+import { useMounted } from "../hooks/use-mounted";
 
 interface ProgressRecorderProps {
   lessonId: Id<"lessons">;
@@ -60,13 +61,10 @@ export function ProgressRecorder({
   });
 
   const [isSaving, setIsSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   const createProgress = useMutation(api.progress.createProgress);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleSkillChange = (skill: keyof typeof skills, value: number) => {
     setSkills(prev => ({

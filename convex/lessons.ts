@@ -1,5 +1,10 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
+import {
+  requireLegacyLessonIdentity,
+  requireLegacyStudentIdentity,
+  requireLegacyTeacherIdentity,
+} from "./auth";
 
 // Create a new lesson
 export const createLesson = mutation({
@@ -19,6 +24,11 @@ export const createLesson = mutation({
   },
   returns: v.id("lessons"),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
+    const student = await ctx.db.get(args.studentId);
+    if (!student || student.teacherId !== args.teacherId) {
+      throw new ConvexError("Not found or access denied");
+    }
     return await ctx.db.insert("lessons", {
       teacherId: args.teacherId,
       studentId: args.studentId,
@@ -64,6 +74,7 @@ export const getLessonsByTeacher = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const query = ctx.db
       .query("lessons")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId));
@@ -110,6 +121,7 @@ export const getLessonsByStudent = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyStudentIdentity(ctx, args.studentId);
     return await ctx.db
       .query("lessons")
       .withIndex("by_student_and_scheduled", (q) => q.eq("studentId", args.studentId))
@@ -131,6 +143,7 @@ export const updateLessonStatus = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireLegacyLessonIdentity(ctx, args.lessonId);
     await ctx.db.patch(args.lessonId, {
       status: args.status,
       updatedAt: Date.now(),
@@ -169,7 +182,8 @@ export const getLesson = query({
     v.null()
   ),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.lessonId);
+    const { lesson } = await requireLegacyLessonIdentity(ctx, args.lessonId);
+    return lesson;
   },
 }); 
 
@@ -184,6 +198,11 @@ export const getOrCreateLesson = mutation({
   },
   returns: v.id("lessons"),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
+    const student = await ctx.db.get(args.studentId);
+    if (!student || student.teacherId !== args.teacherId) {
+      throw new ConvexError("Not found or access denied");
+    }
     // First, check if there's an existing active lesson (planned or in_progress)
     const existingLesson = await ctx.db
       .query("lessons")
@@ -258,6 +277,7 @@ export const getLessonsByDateRange = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     return await ctx.db
       .query("lessons")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
@@ -306,6 +326,7 @@ export const getLessonsByDay = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     // Get start and end of the day
     const startOfDay = new Date(args.date);
     startOfDay.setHours(0, 0, 0, 0);
@@ -335,6 +356,7 @@ export const rescheduleLesson = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireLegacyLessonIdentity(ctx, args.lessonId);
     const updateData: {
       scheduledAt: number;
       updatedAt: number;
@@ -367,6 +389,7 @@ export const checkSchedulingConflicts = query({
     duration: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const lessonStart = args.scheduledAt;
     const lessonEnd = args.scheduledAt + (args.duration * 60 * 1000); // Convert minutes to milliseconds
     
@@ -437,6 +460,7 @@ export const getTodaysLessons = query({
     status: v.union(v.literal("planned"), v.literal("in_progress"), v.literal("completed"), v.literal("cancelled")),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).getTime();

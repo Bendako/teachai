@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
+import { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 
 interface ProgressTrackerProps {
@@ -22,67 +22,89 @@ type Skills = {
   vocabulary: number;
 };
 
+const defaultSkills: Skills = {
+  reading: 5,
+  writing: 5,
+  speaking: 5,
+  listening: 5,
+  grammar: 5,
+  vocabulary: 5,
+};
+
 export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: ProgressTrackerProps) {
   const existingProgress = useQuery(api.progress.getProgressByLesson, { lessonId });
+
+  if (existingProgress === undefined) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading progress...</span>
+      </div>
+    );
+  }
+
+  const progressKey = existingProgress
+    ? JSON.stringify([existingProgress._id, existingProgress.skills, existingProgress.topicsCovered, existingProgress.notes, existingProgress.homework])
+    : "new";
+
+  return (
+    <ProgressTrackerEditor
+      key={progressKey}
+      lessonId={lessonId}
+      studentId={studentId}
+      teacherId={teacherId}
+      existingProgress={existingProgress}
+      onComplete={onComplete}
+    />
+  );
+}
+
+interface ProgressTrackerEditorProps extends ProgressTrackerProps {
+  existingProgress: Doc<"progress"> | null;
+}
+
+function ProgressTrackerEditor({ lessonId, studentId, teacherId, existingProgress, onComplete }: ProgressTrackerEditorProps) {
   const createProgress = useMutation(api.progress.createProgress);
   const updateProgress = useMutation(api.progress.updateProgress);
   const updateLessonStatus = useMutation(api.lessons.updateLessonStatus);
 
-  const [skills, setSkills] = useState<Skills>({
-    reading: 5,
-    writing: 5,
-    speaking: 5,
-    listening: 5,
-    grammar: 5,
-    vocabulary: 5,
-  });
+  const [skills, setSkills] = useState<Skills>(() => existingProgress?.skills ?? defaultSkills);
 
-  const [topicsCovered, setTopicsCovered] = useState<string[]>([]);
+  const [topicsCovered, setTopicsCovered] = useState<string[]>(() => existingProgress?.topicsCovered ?? []);
   const [newTopic, setNewTopic] = useState("");
-  const [notes, setNotes] = useState("");
-  const [homework, setHomework] = useState({
-    assigned: "",
-    completed: false,
-    feedback: "",
-  });
+  const [notes, setNotes] = useState(() => existingProgress?.notes ?? "");
+  const [homework, setHomework] = useState(() => existingProgress?.homework
+    ? {
+        assigned: existingProgress.homework.assigned,
+        completed: existingProgress.homework.completed,
+        feedback: existingProgress.homework.feedback ?? "",
+      }
+    : {
+        assigned: "",
+        completed: false,
+        feedback: "",
+      });
 
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load existing progress data
-  useEffect(() => {
-    if (existingProgress) {
-      setSkills(existingProgress.skills);
-      setTopicsCovered(existingProgress.topicsCovered);
-      setNotes(existingProgress.notes);
-      if (existingProgress.homework) {
-        setHomework({
-          assigned: existingProgress.homework.assigned,
-          completed: existingProgress.homework.completed,
-          feedback: existingProgress.homework.feedback || "",
-        });
-      }
-    }
-  }, [existingProgress]);
-
-  // Mark as having changes when data is modified
-  useEffect(() => {
-    setHasChanges(true);
-  }, [skills, topicsCovered, notes, homework]);
 
   const handleSkillChange = (skill: keyof Skills, value: number) => {
     setSkills(prev => ({ ...prev, [skill]: value }));
+    setHasChanges(true);
   };
 
   const addTopic = () => {
     if (newTopic.trim() && !topicsCovered.includes(newTopic.trim())) {
       setTopicsCovered(prev => [...prev, newTopic.trim()]);
       setNewTopic("");
+      setHasChanges(true);
     }
   };
 
   const removeTopic = (topic: string) => {
     setTopicsCovered(prev => prev.filter(t => t !== topic));
+    setHasChanges(true);
   };
 
   const handleSave = async () => {
@@ -126,15 +148,6 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
     });
     onComplete?.();
   };
-
-  if (existingProgress === undefined) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading progress...</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
@@ -204,7 +217,7 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
         <h3 className="text-lg font-semibold text-gray-900">Lesson Notes</h3>
         <textarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e) => { setNotes(e.target.value); setHasChanges(true); }}
           placeholder="Record observations, areas for improvement, student behavior, breakthroughs, etc..."
           rows={4}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -217,7 +230,7 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
         <div className="space-y-3">
           <textarea
             value={homework.assigned}
-            onChange={(e) => setHomework(prev => ({ ...prev, assigned: e.target.value }))}
+            onChange={(e) => { setHomework(prev => ({ ...prev, assigned: e.target.value })); setHasChanges(true); }}
             placeholder="Assign homework or practice exercises..."
             rows={2}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -227,7 +240,7 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
               type="checkbox"
               id="homework-completed"
               checked={homework.completed}
-              onChange={(e) => setHomework(prev => ({ ...prev, completed: e.target.checked }))}
+              onChange={(e) => { setHomework(prev => ({ ...prev, completed: e.target.checked })); setHasChanges(true); }}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label htmlFor="homework-completed" className="text-sm text-gray-700">
@@ -237,7 +250,7 @@ export function ProgressTracker({ lessonId, studentId, teacherId, onComplete }: 
           {homework.completed && (
             <textarea
               value={homework.feedback}
-              onChange={(e) => setHomework(prev => ({ ...prev, feedback: e.target.value }))}
+              onChange={(e) => { setHomework(prev => ({ ...prev, feedback: e.target.value })); setHasChanges(true); }}
               placeholder="Feedback on completed homework..."
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

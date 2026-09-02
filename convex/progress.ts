@@ -1,5 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
+import {
+  requireAuthenticatedIdentity,
+  requireLegacyLessonIdentity,
+  requireLegacyStudentIdentity,
+  requireLegacyTeacherIdentity,
+} from "./auth";
 
 // Create a new progress record for a lesson
 export const createProgress = mutation({
@@ -25,6 +31,10 @@ export const createProgress = mutation({
   },
   returns: v.id("progress"),
   handler: async (ctx, args) => {
+    const { lesson, student } = await requireLegacyLessonIdentity(ctx, args.lessonId);
+    if (student._id !== args.studentId || lesson.teacherId !== args.teacherId) {
+      throw new Error("Not found or access denied");
+    }
     return await ctx.db.insert("progress", {
       lessonId: args.lessonId,
       studentId: args.studentId,
@@ -61,6 +71,17 @@ export const updateProgress = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const { progressId, ...updates } = args;
+    await requireAuthenticatedIdentity(ctx);
+    const progress = await ctx.db.get(progressId);
+    if (!progress) throw new Error("Not found or access denied");
+    const { lesson, student, user } = await requireLegacyLessonIdentity(ctx, progress.lessonId);
+    if (
+      progress.studentId !== student._id ||
+      progress.teacherId !== user._id ||
+      lesson.teacherId !== user._id
+    ) {
+      throw new Error("Not found or access denied");
+    }
     
     // Filter out undefined values
     const cleanUpdates = Object.fromEntries(
@@ -103,6 +124,7 @@ export const getProgressByLesson = query({
     v.null()
   ),
   handler: async (ctx, args) => {
+    await requireLegacyLessonIdentity(ctx, args.lessonId);
     return await ctx.db
       .query("progress")
       .withIndex("by_lesson", (q) => q.eq("lessonId", args.lessonId))
@@ -133,6 +155,7 @@ export const getProgressByStudent = query({
     createdAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyStudentIdentity(ctx, args.studentId);
     const query = ctx.db
       .query("progress")
       .withIndex("by_student_and_created", (q) => q.eq("studentId", args.studentId))
@@ -166,6 +189,7 @@ export const getProgressSummaryByTeacher = query({
     createdAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     return await ctx.db
       .query("progress")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
@@ -187,6 +211,7 @@ export const getStudentSkillsAverage = query({
     totalSessions: v.number(),
   }),
   handler: async (ctx, args) => {
+    await requireLegacyStudentIdentity(ctx, args.studentId);
     const progressRecords = await ctx.db
       .query("progress")
       .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
@@ -269,6 +294,7 @@ export const getLessonHistoryByStudent = query({
     progressCreatedAt: v.optional(v.number()),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyStudentIdentity(ctx, args.studentId);
     // Get all lessons for the student, ordered by most recent first
     const lessons = await ctx.db
       .query("lessons")
@@ -325,6 +351,7 @@ export const getRecentProgress = query({
     }),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const progress = await ctx.db
       .query("progress")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
@@ -350,7 +377,7 @@ export const getRecentProgress = query({
   },
 });
 
-// Internal version of getProgressByLesson for use in actions
+// Internal version of getProgressByLesson for use after an action authorizes its caller
 export const internalGetProgressByLesson = internalQuery({
   args: { lessonId: v.id("lessons") },
   returns: v.union(

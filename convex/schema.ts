@@ -2,6 +2,37 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  workspaces: defineTable({
+    name: v.string(),
+    createdByIdentityId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_created_by_identity", ["createdByIdentityId"]),
+
+  memberships: defineTable({
+    workspaceId: v.id("workspaces"),
+    memberIdentityId: v.string(),
+    role: v.union(
+      v.literal("owner"),
+      v.literal("admin"),
+      v.literal("teacher"),
+    ),
+    status: v.union(v.literal("active"), v.literal("removed")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    removedAt: v.optional(v.number()),
+  })
+    .index("by_workspace_and_identity", ["workspaceId", "memberIdentityId"])
+    .index("by_identity_and_status", ["memberIdentityId", "status"]),
+
+  learners: defineTable({
+    workspaceId: v.id("workspaces"),
+    name: v.string(),
+    createdByIdentityId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_workspace", ["workspaceId"]),
+
   // Users table for storing teacher profiles
   users: defineTable({
     name: v.string(),

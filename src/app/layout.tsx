@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs'
+import AppProviders from "./AppProviders";
 import ConvexClientProvider from './ConvexClientProvider'
 import Header from '@/components/layout/header'
 
@@ -18,16 +18,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
   return (
-    <ClerkProvider>
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <ConvexClientProvider>
-          <Header />
-          {children}
-        </ConvexClientProvider>
+        <AppProviders publishableKey={clerkPublishableKey}>
+          <ConvexClientProvider>
+            <Header />
+            {children}
+          </ConvexClientProvider>
+        </AppProviders>
       </body>
     </html>
-    </ClerkProvider>
   );
 }

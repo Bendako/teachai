@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
+import { useMounted } from "../hooks/use-mounted";
 
 interface AILessonPlannerProps {
   studentId: Id<"students">;
@@ -55,7 +56,7 @@ export function AILessonPlanner({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlanData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -75,10 +76,6 @@ export function AILessonPlanner({
     "reading", "writing", "speaking", "listening", "grammar", "vocabulary"
   ];
 
-  // Fix hydration issues by ensuring component is mounted
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleSkillChange = (skill: string, checked: boolean) => {
     if (checked) {

@@ -1,30 +1,24 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 
-// Generate upload URL for file attachments
+const disabled = () => {
+  throw new ConvexError("Legacy public file storage function disabled");
+};
+
 export const generateUploadUrl = mutation({
   args: {},
   returns: v.string(),
-  handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
-  },
+  handler: disabled,
 });
 
-// Get file URL for viewing uploaded files
 export const getFileUrl = mutation({
   args: { storageId: v.id("_storage") },
   returns: v.union(v.string(), v.null()),
-  handler: async (ctx, args) => {
-    return await ctx.storage.getUrl(args.storageId);
-  },
+  handler: disabled,
 });
 
-// Delete a file from storage
 export const deleteFile = mutation({
   args: { storageId: v.id("_storage") },
   returns: v.null(),
-  handler: async (ctx, args) => {
-    await ctx.storage.delete(args.storageId);
-    return null;
-  },
-}); 
+  handler: disabled,
+});

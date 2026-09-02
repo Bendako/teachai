@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -13,6 +13,8 @@ interface GoogleCalendarIntegrationProps {
 export function GoogleCalendarIntegration({ teacherId }: GoogleCalendarIntegrationProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string>("");
+  const callbackKeyRef = useRef<string | null>(null);
+  const activeRef = useRef(true);
 
   // Get current Google Calendar connection
   const connection = useQuery(api.googleCalendar.getGoogleCalendarConnection, {
@@ -33,6 +35,7 @@ export function GoogleCalendarIntegration({ teacherId }: GoogleCalendarIntegrati
   const storeGoogleCalendarConnection = useMutation(api.googleCalendar.storeGoogleCalendarConnection);
 
   const handleOAuthCallback = useCallback(async (code: string) => {
+    if (!activeRef.current) return;
     setIsConnecting(true);
     try {
       const result = await handleAuthCallback({ code, teacherId });
@@ -45,34 +48,40 @@ export function GoogleCalendarIntegration({ teacherId }: GoogleCalendarIntegrati
           tokenExpiry: Date.now() + 3600000,
           calendarId: result.calendarId || "primary",
         });
-        setSyncStatus(result.message);
+        if (activeRef.current) setSyncStatus(result.message);
       } else {
-        setSyncStatus(`Connection failed: ${result.message}`);
+        if (activeRef.current) setSyncStatus(`Connection failed: ${result.message}`);
       }
     } catch (error) {
       console.error("OAuth callback failed:", error);
-      setSyncStatus("Connection failed. Please try again.");
+      if (activeRef.current) setSyncStatus("Connection failed. Please try again.");
     } finally {
-      setIsConnecting(false);
+      if (activeRef.current) setIsConnecting(false);
     }
   }, [handleAuthCallback, storeGoogleCalendarConnection, teacherId]);
 
   // Handle OAuth callback from URL parameters
   useEffect(() => {
+    activeRef.current = true;
     const urlParams = new URLSearchParams(window.location.search);
     const authCode = urlParams.get('auth_code');
     const teacherIdParam = urlParams.get('teacher_id');
     const oauthProvider = urlParams.get('oauth_provider');
 
-    if (authCode && teacherIdParam === teacherId && oauthProvider === 'google') {
-      handleOAuthCallback(authCode);
+    const callbackKey = authCode && `${teacherIdParam}:${authCode}`;
+    if (authCode && teacherIdParam === teacherId && oauthProvider === 'google' && callbackKeyRef.current !== callbackKey) {
+      callbackKeyRef.current = callbackKey;
       // Clean up URL parameters
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('auth_code');
       newUrl.searchParams.delete('teacher_id');
       newUrl.searchParams.delete('oauth_provider');
       window.history.replaceState({}, '', newUrl.toString());
+      void Promise.resolve().then(() => handleOAuthCallback(authCode));
     }
+    return () => {
+      activeRef.current = false;
+    };
   }, [teacherId, handleOAuthCallback]);
 
   const handleConnect = async () => {

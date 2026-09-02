@@ -1,8 +1,15 @@
 "use client";
 
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { SignUpButton } from "@clerk/nextjs";
+import { useClerkConfigured } from "@/app/AppProviders";
+
+function SignUpOrStatic({ children }: { children: ReactNode }) {
+  const clerkConfigured = useClerkConfigured();
+
+  return clerkConfigured ? <SignUpButton>{children}</SignUpButton> : children;
+}
 
 export function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
@@ -89,11 +96,11 @@ export function LandingPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <SignUpButton>
+              <SignUpOrStatic>
                 <Button size="lg" className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5855EB] hover:to-[#7C3AED] text-white px-8 py-4 text-lg font-semibold shadow-lg rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
                   Start Free 14-Day Trial
                 </Button>
-              </SignUpButton>
+              </SignUpOrStatic>
               <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -264,8 +271,8 @@ export function LandingPage() {
                       {plan.cta}
                     </Button>
                   ) : (
-                    <SignUpButton>
-                      <Button 
+                    <SignUpOrStatic>
+                      <Button
                         className={`w-full py-3 text-lg font-semibold rounded-xl transition-all duration-300 ${
                           plan.popular
                             ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5855EB] hover:to-[#7C3AED] text-white'
@@ -274,7 +281,7 @@ export function LandingPage() {
                       >
                         {plan.cta}
                       </Button>
-                    </SignUpButton>
+                    </SignUpOrStatic>
                   )}
                 </div>
               </div>
@@ -332,11 +339,11 @@ export function LandingPage() {
             track progress, and save time every day.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <SignUpButton>
+            <SignUpOrStatic>
               <Button size="lg" className="bg-white text-[#6366F1] hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl">
                 Start Free Trial
               </Button>
-            </SignUpButton>
+            </SignUpOrStatic>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#6366F1] px-8 py-4 text-lg font-semibold rounded-xl">
               Schedule Demo
             </Button>

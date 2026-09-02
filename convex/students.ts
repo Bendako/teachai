@@ -1,5 +1,9 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
+import {
+  requireAuthenticatedIdentity,
+  requireLegacyTeacherIdentity,
+} from "./auth";
 
 // Create a new student
 export const createStudent = mutation({
@@ -21,6 +25,7 @@ export const createStudent = mutation({
   },
   returns: v.id("students"),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     return await ctx.db.insert("students", {
       teacherId: args.teacherId,
       name: args.name,
@@ -66,6 +71,7 @@ export const getStudentsByTeacher = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     if (args.activeOnly) {
       return await ctx.db
         .query("students")
@@ -112,7 +118,13 @@ export const getStudent = query({
     v.null()
   ),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.studentId);
+    await requireAuthenticatedIdentity(ctx);
+    const student = await ctx.db.get(args.studentId);
+    if (!student) {
+      throw new ConvexError("Not found or access denied");
+    }
+    await requireLegacyTeacherIdentity(ctx, student.teacherId);
+    return student;
   },
 });
 
@@ -138,6 +150,12 @@ export const updateStudent = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const { studentId, ...updates } = args;
+    await requireAuthenticatedIdentity(ctx);
+    const student = await ctx.db.get(studentId);
+    if (!student) {
+      throw new ConvexError("Not found or access denied");
+    }
+    await requireLegacyTeacherIdentity(ctx, student.teacherId);
     
     // Filter out undefined values
     const cleanUpdates = Object.fromEntries(
@@ -158,6 +176,12 @@ export const deleteStudent = mutation({
   args: { studentId: v.id("students") },
   returns: v.null(),
   handler: async (ctx, args) => {
+    await requireAuthenticatedIdentity(ctx);
+    const student = await ctx.db.get(args.studentId);
+    if (!student) {
+      throw new ConvexError("Not found or access denied");
+    }
+    await requireLegacyTeacherIdentity(ctx, student.teacherId);
     // We don't actually delete students, just mark them as inactive
     await ctx.db.patch(args.studentId, {
       isActive: false,
@@ -181,6 +205,7 @@ export const getStudentsByLevel = query({
     isActive: v.boolean(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const allStudents = await ctx.db
       .query("students")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
@@ -214,6 +239,7 @@ export const searchStudents = query({
     isActive: v.boolean(),
   })),
   handler: async (ctx, args) => {
+    await requireLegacyTeacherIdentity(ctx, args.teacherId);
     const allStudents = await ctx.db
       .query("students")
       .withIndex("by_teacher", (q) => q.eq("teacherId", args.teacherId))
