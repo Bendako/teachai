@@ -1,7 +1,7 @@
 "use node";
 
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -320,7 +320,7 @@ export const generateAILessonPlanSimple = action({
 });
 
 // Test AI connection
-export const testAIConnection = action({
+export const testAIConnection = internalAction({
   args: {},
   returns: v.object({
     openai: v.object({

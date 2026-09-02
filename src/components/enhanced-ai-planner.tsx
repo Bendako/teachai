@@ -5,6 +5,7 @@ import { useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
+import { useMounted } from "../hooks/use-mounted";
 
 interface EnhancedAIPlannerProps {
   studentId: Id<"students">;
@@ -84,7 +85,7 @@ export function EnhancedAIPlanner({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedLessonPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
 
   const [planParams, setPlanParams] = useState({
     lessonDuration: 60,
@@ -99,10 +100,6 @@ export function EnhancedAIPlanner({
     "reading", "writing", "speaking", "listening", "grammar", "vocabulary"
   ];
 
-  // Fix hydration issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleSkillChange = (skill: string, checked: boolean) => {
     if (checked) {

@@ -14,16 +14,12 @@ import { useClerkConfigured } from "./AppProviders";
 
 import { Sidebar } from "../components/layout/sidebar";
 import { Button } from "../components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useMounted } from "../hooks/use-mounted";
 
 export default function Home() {
   const clerkConfigured = useClerkConfigured();
-  const [mounted, setMounted] = useState(false);
-
-  // Fix hydration issues by ensuring component is mounted
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   if (!mounted) {
     return (
@@ -58,7 +54,7 @@ export default function Home() {
 
 function TeacherDashboard() {
   const { user, isLoaded } = useUser();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [activeSection, setActiveSection] = useState("dashboard");
   
   const currentUser = useQuery(api.users.getUserByClerkId, { 
@@ -66,9 +62,6 @@ function TeacherDashboard() {
   });
   const createUser = useMutation(api.users.createUser);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Wait for Clerk to load and component to mount
   if (!mounted || !isLoaded) {

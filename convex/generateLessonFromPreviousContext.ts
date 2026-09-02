@@ -1,6 +1,6 @@
 "use node";
 
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { action } from "./_generated/server";
 import { analyzePreviousLessonPerformance, generateEnhancedPrompt, generateWithClaude } from "./lessonHelpers";
 
@@ -56,8 +56,18 @@ export const generateLessonFromPreviousContext = action({
   }),
   handler: async (ctx, args) => {
     try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        throw new ConvexError("Unauthenticated");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { internal } = (await import("./_generated/api")) as any;
+      await ctx.runQuery(internal.auth.authorizeLessonGeneration, {
+        identitySubject: identity.subject,
+        teacherId: args.teacherId,
+        studentId: args.studentId,
+        lessonId: args.previousLessonId,
+      });
       // Step 1: Get previous lesson data using internal function
       const previousLesson = await ctx.runQuery(internal.lessons.internalGetLesson, {
         lessonId: args.previousLessonId,
