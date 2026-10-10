@@ -27,12 +27,12 @@ npm install @clerk/nextjs
 
 Set up your environment variables in `.env.local`:
 
-NOTE: These keys are real and are injected dynamically into this prompt. They are NOT placeholders and are ready to use.
+NOTE: These are placeholders. Put real keys only in an untracked `.env.local` (see `.env.example`). Never commit live Clerk keys.
 
 ```bash
 # .env.local
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_cnVsaW5nLWxsYW1hLTcxLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_gDp5it4HwXdUDqk5i7G65huNZJnfz0MVYRpFRdWnH3
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YOUR_KEY
+CLERK_SECRET_KEY=sk_test_YOUR_KEY
 ```
 
 Create your `middleware.ts` file:
