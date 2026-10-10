@@ -42,7 +42,7 @@ npm ci
 
 ### 2. Environment Configuration
 
-Create a `.env.local` file in the root directory:
+Copy `.env.example` to `.env.local` and fill in real values. `.env.local` is gitignored:
 
 ```env
 # Clerk Authentication
