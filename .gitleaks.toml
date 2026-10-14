@@ -1,0 +1,31 @@
+title = "TeachAI gitleaks config"
+
+[extend]
+useDefault = true
+
+# Default anthropic-api-key requires a 108-character sk-ant-api03-...AA key.
+# Shorter keys with the same prefix have already leaked from this repo.
+[[rules]]
+id = "anthropic-api-key-flexible"
+description = "Anthropic API key, including shorter sk-ant-api03 keys"
+regex = '''\b(sk-ant-api03-[A-Za-z0-9_-]{20,})(?:[\x60'"\s;]|\\[nr]|$)'''
+keywords = ["sk-ant-api03"]
+entropy = 3.0
+
+[allowlist]
+description = "Committed placeholders and synthetic test fixtures"
+regexTarget = "match"
+regexes = [
+  '''pk_test_YOUR_KEY''',
+  '''sk_test_YOUR_KEY''',
+  '''pk_test_your_publishable_key_here''',
+  '''sk_test_your_secret_key_here''',
+  '''pk_test_\.\.\.''',
+  '''sk_test_\.\.\.''',
+  '''pk_test_synthetic''',
+  '''sk-your_openai_api_key_here''',
+  '''sk-ant-your_anthropic_api_key_here''',
+  '''SG\.your_sendgrid_api_key_here''',
+  '''re_your_(?:actual_)?api_key_here''',
+  '''re_your_resend_api_key_here''',
+]
