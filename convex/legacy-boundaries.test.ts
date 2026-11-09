@@ -377,10 +377,21 @@ describe("legacy public boundary containment", () => {
     await expect(unauthorizedError).rejects.toThrow(
       "Not found or access denied",
     );
+    // A well-formed ID for a Student that no longer exists must get the same
+    // generic denial. Hard-coding a fake ID string depends on convex-test's
+    // internal ID encoding, which changed between releases.
+    const missingStudentId = await owner.mutation(createStudent, {
+      teacherId: ownerTeacherId,
+      ...syntheticStudent,
+    });
+    await t.run(async (ctx) => {
+      await ctx.db.delete(missingStudentId);
+    });
     await expect(
-      attacker.query(getStudent, {
-        studentId: "99999;students" as Id<"students">,
-      }),
+      attacker.query(getStudent, { studentId: missingStudentId }),
+    ).rejects.toThrow("Not found or access denied");
+    await expect(
+      owner.query(getStudent, { studentId: missingStudentId }),
     ).rejects.toThrow("Not found or access denied");
   });
 
