@@ -377,11 +377,13 @@ describe("legacy public boundary containment", () => {
     await expect(unauthorizedError).rejects.toThrow(
       "Not found or access denied",
     );
-    await expect(
-      attacker.query(getStudent, {
-        studentId: "99999;students" as Id<"students">,
-      }),
-    ).rejects.toThrow("Not found or access denied");
+    await t.run(async (ctx) => {
+      await ctx.db.delete(studentId);
+    });
+    await expect(attacker.query(getStudent, { studentId })).rejects.toThrow(
+      "Not found or access denied",
+    );
+    await expect(t.run(async (ctx) => await ctx.db.get(studentId))).resolves.toBeNull();
   });
 
   it("derives a legacy User Clerk identifier from authenticated identity", async () => {
