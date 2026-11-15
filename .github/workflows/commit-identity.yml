@@ -1,0 +1,31 @@
+name: Commit identity
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commit-identity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Identity check self-test
+        run: bash scripts/test-check-commit-identity.sh
+
+      - name: Check commit identities in the PR range
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          COMMIT_IDENTITY_EXTRA_ALLOWLIST: ${{ vars.COMMIT_IDENTITY_EXTRA_ALLOWLIST }}
+        run: bash scripts/check-commit-identity.sh "$BASE_SHA..$HEAD_SHA"
